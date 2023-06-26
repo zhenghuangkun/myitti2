@@ -1,0 +1,53 @@
+#!/bin/bash
+# author  zhenghuangkun
+
+until [ -z "$1" ]
+do
+case "$1" in
+  -c | --clean)
+    CLEAN=1
+    shift;;
+  -C | --clean-all)
+    CLEAN_ALL=1
+    shift;;
+
+esac
+done
+
+if [ "$CLEAN" = "1" ] ; then
+  rm ./build_dir -rf
+  mkdir -p build_dir/build
+fi
+
+
+cmake_file=$PWD
+
+cd ..
+export OPENAIR_DIR=$PWD
+
+cd $cmake_file
+#ngap_asn1_path="$cmake_file/../openair3/NGAP/MESSAGE/ASN1/R16/ngap-16.2.0.asn1"
+
+#ngap_asn1_gen_dir="$cmake_file/../openair3/NGAP/MESSAGE/ASN1/R16/h"
+
+#prefix="NGAP_"
+
+rm -rf $cmake_file/../openair3/NGAP/MESSAGE/ASN1/R16/h
+
+ngap_asn1_path="$cmake_file/../openair3/NGAP/MESSAGE/ASN1/R16/s1ap-15.6.0.asn1"
+
+ngap_asn1_gen_dir="$cmake_file/../openair3/NGAP/MESSAGE/ASN1/R16/h"
+
+prefix="S1AP_"
+
+#ngap asn1 create
+#chmod +x $cmake_file/../openair3/NGAP/MESSAGE/tools/make_asn1c_includes.sh
+#$cmake_file/../openair3/NGAP/MESSAGE/tools/make_asn1c_includes.sh $ngap_asn1_gen_dir $ngap_asn1_path $prefix -fno-include-deps
+
+cd build_dir/build
+
+
+
+cmake $cmake_file
+
+make
