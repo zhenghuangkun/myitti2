@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.awslabplatform_admin.dao.awsAccountManage.AwsAccountsDao">
+	<resultMap type="com.awslabplatform_admin.entity.AwsAccounts" id="AwsAccountsMap">
+		<result property="id" column="id"/>
+		<result property="accountId" column="accountId"/>
+		<result property="accountName" column="accountName"/>
+		<result property="org" column="org"/>
+		<result property="departmentId" column="departmentId"/>
+		<result property="email" column="email"/>
+		<result property="isUPT" column="isUPT"/>
+		<result property="IAM" column="IAM"/>
+		<result property="AK" column="AK"/>
+		<result property="SK" column="SK"/>
+		<result property="operate" column="operate"/>
+		<result property="createTime" column="createTime"/>
+		<result property="accountStause" column="accountStause"/>
+		<result property="isActive" column="isActive"/>
+		
+		<result property="isPayingAccount" column="isPayingAccount"/>
+		<result property="payingAccountId" column="payingAccountId"/>
+		<result property="payingAccountName" column="payingAccountName"/>
+	</resultMap>
+
+	<!-- 查询添加AWS Account名称与AccountId是否已经存在 author:czy -->
+	<select id="countAwsAccountData" parameterType="AwsAccounts" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tb_aws_account
+		<where>
+			1 = 1
+			<if test="accountStause != null">
+				AND accountStause = #{accountStause}
+			</if>
+			<if test="accountId != null and accountName != null">
+				AND (accountId = #{accountId} OR accountName = #{accountName})
+			</if>
+		</where>
+	</select>
+	
+ 	<!-- 插入添加AWS Account账户信息 author:czy -->
+	<insert id="insert" parameterType="AwsAccounts">
+	<selectKey keyProperty="id" resultType="java.lang.String" order="BEFORE">
+         SELECT REPLACE(UUID(),'-','')
+ 	</selectKey>
+       INSERT INTO tb_aws_account(
+	       	id,accountId,accountName,org,departmentId,email,isUPT,IAM,AK,SK,operate,createTime,payingAccountId,isPayingAccount,payingAccountName)
+       VALUES (
+           #{id},#{accountId},#{accountName},#{org},#{departmentId},#{email},#{isUPT},#{IAM},#{AK},#{SK},
+           #{operate},#{createTime},#{payingAccountId},#{isPayingAccount},#{payingAccountName})
+	</insert>
+	
+	
+	<!-- 获取AWS Account的数据，将数据显示在表格上 author:czy -->
+	<select id="getAwsAccountData"  parameterType="PageInfo" resultType="AwsAccounts">
+		SELECT
+			tb_aws_account.id,tb_aws_account.accountId,tb_aws_account.accountName,a.mechanismName as orgName,b.mechanismName as departmentName,
+			tb_aws_account.email,tb_aws_account.isUPT,tb_aws_account.IAM,tb_aws_account.AK,tb_aws_account.SK,tb_aws_account.createTime,tb_aws_account.isActive,
+			tb_aws_account.payingAccountId,tb_aws_account.isPayingAccount,tb_aws_account.payingAccountName
+		FROM
+			tb_aws_account
+	    LEFT OUTER JOIN
+			tb_mechanism as a on (tb_aws_account.org=a.mechanismId)
+		LEFT OUTER JOIN	
+			tb_mechanism as b on (tb_aws_account.departmentId=b.mechanismId)
+	   <where>
+			1 = 1
+			<if test="condition.containsKey('accountId') and condition.accountId != ''">
+				AND tb_aws_account.accountId like concat('%',#{condition.accountId},'%')
+			</if>
+			<if test="condition.containsKey('accountName') and condition.accountName != ''">
+				AND tb_aws_account.accountName like concat('%',#{condition.accountName},'%')
+			</if>
+			<if test="condition.containsKey('org') and condition.org != '-1'">
+				AND tb_aws_account.org = #{condition.org}
+			</if>
+			<if test="condition.containsKey('accountStause') and condition.accountStause != null ">
+				AND tb_aws_account.accountStause = #{condition.accountStause}
+			</if>
+			ORDER BY tb_aws_account.isActive,tb_aws_account.createTime DESC
+	   </where>
+	   LIMIT #{from}, #{size}
+	</select>
+	
+	<!-- 查询AWS Account数据的数量 author:czy -->
+	<select id="countAwsAccounts" parameterType="PageInfo" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tb_aws_account
+	   <where>
+			1 = 1
+			<if test="condition.containsKey('accountId') and condition.accountId != ''">
+				AND tb_aws_account.accountId like concat('%',#{condition.accountId},'%')
+			</if>
+			<if test="condition.containsKey('accountName') and condition.accountName != ''">
+				AND tb_aws_account.accountName like concat('%',#{condition.accountName},'%')
+			</if>
+			<if test="condition.containsKey('org') and condition.org != '-1'">
+				AND tb_aws_account.org = #{condition.org}
+			</if>
+			<if test="condition.containsKey('accountStause') and condition.accountStause != null ">
+				AND tb_aws_account.accountStause = #{condition.accountStause}
+			</if>
+	   </where>
+	</select>
+	
+	<!-- 根据条件获取AWS Account的数据，将数据显示在编辑的页面上 author:czy -->
+	<select id="selectIdAwsAccountData" parameterType="AwsAccounts" resultType="AwsAccounts">
+		SELECT
+			tb_aws_account.id,tb_aws_account.accountId,tb_aws_account.accountName,tb_aws_account.org,tb_aws_account.departmentId,
+			tb_aws_account.email,tb_aws_account.isUPT,tb_aws_account.IAM,tb_aws_account.AK,tb_aws_account.SK,tb_aws_account.createTime,tb_aws_account.payingAccountId,tb_aws_account.isPayingAccount,tb_aws_account.payingAccountName
+		FROM
+			tb_aws_account
+	   <where>
+			1 = 1
+			<if test="id!= null">
+				AND tb_aws_account.id =#{id}
+			</if>
+	   </where>
+	</select>
+	
+	<!-- 编辑是判断数据库的数量是否存在 author:czy -->
+	<select id="countEditAwsAccountData" parameterType="PageInfo" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tb_aws_account
+		<where>
+			1 = 1
+			<if test="condition.containsKey('accountId') and condition.accountId != ''">
+				AND tb_aws_account.accountId = #{condition.accountId}
+			</if>
+			<if test="condition.containsKey('accountName') and condition.accountName != ''">
+				AND tb_aws_account.accountName = #{condition.accountName}
+			</if>
+			<if test="condition.containsKey('accountStause') and condition.accountStause != null ">
+				AND tb_aws_account.accountStause = #{condition.accountStause}
+			</if>
+		</where>
+	</select>
+		
+	<!-- 修改AWS Account的数据 author:czy -->
+	<update id="updateByPrimaryKeySelective" parameterType="AwsAccounts">
+		UPDATE tb_aws_account
+		<set>
+			<if test="accountId != null">
+				accountId = #{accountId},
+			</if>
+			<if test="accountName != null">
+				accountName = #{accountName},
+			</if>
+			<if test="org != null">
+				org = #{org},
+			</if>
+			<if test="departmentId != null">
+				departmentId = #{departmentId},
+			</if>
+			<if test="email != null">
+				email = #{email},
+			</if>
+			<if test="isUPT != null">
+				isUPT = #{isUPT},
+			</if>
+			<if test="IAM != null">
+				IAM = #{IAM},
+			</if>
+			<if test="AK != null">
+				AK = #{AK},
+			</if>
+			<if test="SK != null">
+				SK = #{SK},
+			</if>
+			<if test="accountStause != null">
+				accountStause = #{accountStause},
+			</if>
+			<if test="isActive != null">
+				isActive = #{isActive},
+			</if>
+			<if test="payingAccountId != null">
+				payingAccountId = #{payingAccountId},
+			</if>
+			<if test="isPayingAccount != null">
+				isPayingAccount = #{isPayingAccount},
+			</if>
+			<if test="payingAccountName != null">
+				payingAccountName = #{payingAccountName},
+			</if>
+			
+		</set>
+		<where>
+			id = #{id}
+		</where>
+	</update>
+	<!-- 删除AWS Account数据的数据信息-->
+    <delete id="deleteAwsAccountData" parameterType="String" >
+   		DELETE FROM tb_aws_account WHERE id = #{id}
+  	</delete>
+	
+	<!-- 根据条件org和主账号类型来获取获取AWS Account的数据 author:czy -->
+	<select id="findByOrgAwsAccountData" parameterType="AwsAccounts" resultType="AwsAccounts">
+		SELECT
+			tb_aws_account.id,tb_aws_account.accountId,tb_aws_account.accountName,tb_aws_account.org,tb_aws_account.departmentId,
+			tb_aws_account.email,tb_aws_account.payingAccountId,tb_aws_account.isPayingAccount,tb_aws_account.payingAccountName,tb_aws_account.createTime
+		FROM
+			tb_aws_account
+	   <where>
+			1 = 1
+			<if test="org!=''">
+				AND tb_aws_account.org =#{org}
+			</if>
+			<if test="departmentId!=''">
+				AND tb_aws_account.departmentId =#{departmentId}
+			</if>
+			<if test="isPayingAccount!= null">
+				AND tb_aws_account.isPayingAccount =#{isPayingAccount}
+			</if>
+	   </where>
+	</select>
+	
+	 <!-- 查询集合数据用来下拉列表的显示  -->
+	<select id="getAllAccountList" parameterType="AwsAccounts" resultMap="AwsAccountsMap">
+		SELECT 
+		    tb_aws_account.id,tb_aws_account.accountId,tb_aws_account.accountName,tb_aws_account.org,tb_aws_account.departmentId,tb_aws_account.email,
+		    tb_aws_account.isUPT,tb_aws_account.IAM,tb_aws_account.AK,tb_aws_account.SK,tb_aws_account.createTime,tb_aws_account.payingAccountId,tb_aws_account.isPayingAccount,tb_aws_account.payingAccountName
+		FROM 
+		    tb_aws_account
+		<where>
+		    1=1
+			<if test="accountStause!= null">
+			    AND	tb_aws_account.accountStause=#{accountStause}	
+			</if>
+			<if test="isActive!= null">
+			    AND	tb_aws_account.isActive=#{isActive}	
+			</if>
+			<if test="accountName!= ''">
+			    AND tb_aws_account.accountName like concat('%',#{accountName},'%')
+			</if>
+			<if test="accountId!= null">
+				AND tb_aws_account.accountId =#{accountId}				
+			</if>
+			ORDER BY tb_aws_account.createTime DESC
+	   </where> 
+	</select>
+	
+	<!-- 根据当前登陆者awsAccount查询出account id -->
+	<select id="getUserAccount"  parameterType="AwsAccounts" resultType="AwsAccounts">
+	  select accountid from tb_aws_account where id =#{awsAccount}
+	</select>
+</mapper>

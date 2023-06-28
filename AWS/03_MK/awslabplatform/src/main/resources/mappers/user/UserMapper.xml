@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform.dao.userManage.UserDao">
+
+	<resultMap type="com.awslabplatform.entity.Student" id="StudentMap">
+		<id property="id" column="id"/>
+		<result property="stuId" column="stuId"/>
+		<result property="realName" column="realName"/>
+		<result property="schoolId" column="schoolId"/>
+		<result property="mechanismId" column="mechanismId"/>
+		<result property="major" column="major"/>
+		<result property="grade" column="grade"/>
+		<result property="classes" column="classes"/>
+		<result property="className" column="classesName"/>
+		<result property="phoneNum" column="phoneNum"/>
+		<result property="email" column="email"/>
+		<result property="birthday" column="birthday"/>
+		<result property="runningExperiment" column="runningExperiment"/>
+		<result property="address" column="address"/>
+		<result property="userPwd" column="userPwd"/>
+		<result property="userState" column="userState"/>
+		<result property="picFileUrl" column="picFileUrl"/>
+	</resultMap>
+
+	<select id="selectById"  parameterType="java.lang.String" resultType="com.awslabplatform.entity.Student">
+	SELECT
+		s.id, s.stuId,s.realName,a.mechanismName,b.mechanismName AS major,c.mechanismName AS grade,
+		d.mechanismName as className,s.phoneNum,s.email,s.userPwd,s.birthday,s.runningExperiment,
+		s.address,s.userState,f.fileUrl AS picFileUrl
+	FROM
+		tb_student s
+	LEFT JOIN tb_mechanism a ON a.mechanismId=s.mechanismId
+	LEFT JOIN tb_mechanism b ON b.mechanismId=s.major
+	LEFT JOIN tb_mechanism c ON c.mechanismId=s.grade
+	LEFT JOIN tb_mechanism d ON d.mechanismId=s.classes
+	LEFT JOIN tb_file_info f ON f.fileId=s.picFileId
+	WHERE
+		s.id=#{id}
+	</select>
+<!--查询学生信息作为标签 -->
+	<select id="getStudentTag" parameterType="java.lang.String" resultType="com.awslabplatform.entity.StudentTag">
+		SELECT
+			tb_mechanism.mechanismName, tb_student.major,tb_student.grade,tb_student.classes AS className,tb_student.realName
+		FROM
+			tb_student
+		LEFT JOIN
+			tb_mechanism
+		ON
+			tb_student.mechanismId=tb_mechanism.mechanismId
+		WHERE
+			tb_student.id=#{studentId}
+	</select>
+	<update id="updateExperiment" parameterType="java.lang.String" >
+		UPDATE
+			tb_student SET runningExperiment=#{experimentId_stackName}
+		WHERE
+			id=#{id}
+	</update>
+
+	<select id="getStudentByEmail" parameterType="java.lang.String" resultMap="StudentMap">
+		select
+		a.id,a.stuId,a.realName,a.phoneNum,a.email,a.userPwd,a.schoolId,a.mechanismId,a.major,a.grade,a.classes,
+		b.mechanismName as schoolName,c.mechanismName as mechanismName,d.mechanismName as majorName,
+		e.mechanismName as gradeName,f.mechanismName as classesName,a.birthday,
+		f.mechanismName as classesName,
+		g.fileUrl as picFileUrl,
+		a.address,a.runningExperiment,a.userState,a.picFileId
+		from
+		tb_student as a
+		LEFT OUTER JOIN
+		tb_mechanism as b on (b.mechanismId=a.schoolId)
+		LEFT OUTER JOIN
+		tb_mechanism as c on (c.mechanismId=a.mechanismId)
+		LEFT OUTER JOIN
+		tb_mechanism as d on (d.mechanismId=a.major)
+		LEFT OUTER JOIN
+		tb_mechanism as e on (e.mechanismId=a.grade)
+		LEFT OUTER JOIN
+		tb_mechanism as f on (f.mechanismId=a.classes)
+		LEFT OUTER JOIN
+		tb_file_info as g on (g.fileId=a.picFileId)
+		<where>
+			a.email=#{email}
+			AND a.userState != 0
+		</where>
+	</select>
+
+	<select id="getStudentByPhone" parameterType="java.lang.String" resultMap="StudentMap">
+		select
+		a.id,a.stuId,a.realName,a.phoneNum,a.email,a.userPwd,a.schoolId,a.mechanismId,a.major,a.grade,a.classes,
+		b.mechanismName as schoolName,c.mechanismName as mechanismName,d.mechanismName as majorName,
+		e.mechanismName as gradeName,f.mechanismName as classesName,a.birthday,
+		f.mechanismName as classesName,
+		a.address,a.runningExperiment,a.userState,a.picFileId
+		from
+		tb_student as a
+		LEFT OUTER JOIN
+		tb_mechanism as b on (b.mechanismId=a.schoolId)
+		LEFT OUTER JOIN
+		tb_mechanism as c on (c.mechanismId=a.mechanismId)
+		LEFT OUTER JOIN
+		tb_mechanism as d on (d.mechanismId=a.major)
+		LEFT OUTER JOIN
+		tb_mechanism as e on (e.mechanismId=a.grade)
+		LEFT OUTER JOIN
+		tb_mechanism as f on (f.mechanismId=a.classes)
+		<where>
+			a.phoneNum=#{phoneNum}
+			AND a.userState != 0
+		</where>
+	</select>
+
+	<select id="updateUserEmailByUserId" parameterType="com.awslabplatform.entity.Student" >
+		UPDATE
+			tb_student
+		SET
+			tb_student.email = #{Email}
+		WHERE
+			tb_student.id = #{userId}
+	</select>
+
+	<select id="getPwdByUser" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			userPwd
+		FROM
+			tb_student
+		WHERE
+			tb_student.id = #{userId}
+	</select>
+
+	<update id="updatePwdByUserId" parameterType="com.awslabplatform.entity.Student">
+		UPDATE
+			tb_student
+		SET
+
+			tb_student.userPwd = #{userPwd}
+		WHERE
+			tb_student.id = #{userId}
+	</update>
+
+	<update id="updateUserInfo" parameterType="Student">
+		UPDATE
+			tb_student
+		SET
+			<if test="picFileId!=''">
+				tb_student.picFileId = #{picFileId}
+			</if>
+			<if test="birthday!=''">
+				,tb_student.birthday=#{birthday}, tb_student.address = #{address}
+			</if>
+	  	<where>
+			tb_student.id=#{id}
+		</where>
+	</update>
+
+	<update id="updateStudentPwd" parameterType="Student">
+		UPDATE
+			tb_student
+		SET
+			tb_student.userPwd=#{userPwd}
+			<where>
+				tb_student.id=#{id}
+			</where>
+	</update>
+
+	<update id="updateStudentFace" parameterType="Student">
+		UPDATE
+			tb_student
+		SET
+			tb_student.picFileId = #{picFileId}
+		<where>
+			tb_student.id=#{id}
+		</where>
+	</update>
+</mapper>

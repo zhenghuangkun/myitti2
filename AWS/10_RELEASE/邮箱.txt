@@ -1,0 +1,5 @@
+mail.port=25mail.host=smtp.ym.163.com
+mail.subject=\u4E91\u666E\u4E50\u65AF\u6559\u5B66\u5B9E\u9A8C\u5E73\u53F0
+mail.username=no-reply@unionplus.cn
+mail.password=Upt@168
+mail.port=25

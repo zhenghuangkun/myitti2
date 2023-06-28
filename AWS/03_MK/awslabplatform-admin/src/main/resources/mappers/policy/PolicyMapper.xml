@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.awslabplatform_admin.dao.policy.PolicyDao">
+	<insert id="addPolicy" parameterType="com.awslabplatform_admin.entity.Policy">
+		INSERT INTO tb_policy
+		VALUES (#{id},#{name},#{description},#{createTime},#{fileUrl},#{status})
+	</insert>
+	
+	<update id="updatePolicy" parameterType="com.awslabplatform_admin.entity.Policy">
+		UPDATE tb_policy 
+		SET 
+			<if test="name!=null and ''!=name">
+				`name`=#{name},
+			</if>
+			<if test="description!=null and ''!=description">
+				description=#{description},
+			</if>
+			<if test="createTime!=null and ''!=createTime">
+				createTime=#{createTime},
+			</if>
+			<if test="fileUrl!=null and ''!=fileUrl">
+				fileUrl=#{fileUrl},
+			</if>
+				`status`=#{status}
+		WHERE id=#{id}
+	</update>
+	
+	<delete id="deletePolicy" parameterType="String">
+		DELETE FROM tb_policy WHERE id=#{id}
+	</delete>
+	
+	<select id="selectPolicy" parameterType="String" resultType="com.awslabplatform_admin.entity.Policy">
+		SELECT id,`name`,description,createTime,fileUrl,`status` FROM tb_policy WHERE id=#{id}
+	</select>
+	<select id="listBycondition" parameterType="java.util.Map" resultType="com.awslabplatform_admin.entity.Policy">
+		SELECT id,`name`,description,createTime,fileUrl,`status` FROM tb_policy
+		<where>
+			<if test="condition!=null">
+			    <foreach collection="condition" index="key" item="value" separator="and">
+	       		 ${key}=#{value}
+		   		</foreach>
+		   	</if>
+		</where>
+		ORDER BY createTime DESC
+	</select>
+</mapper>

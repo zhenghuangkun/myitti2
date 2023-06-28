@@ -1,0 +1,62 @@
+2018-03-18 11:22:29 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 11:22:30 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 11:22:30 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-18 11:25:23 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 11:25:24 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 11:26:55 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 11:26:55 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 11:26:55 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-18 11:28:10 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 11:28:11 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 11:28:11 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-18 11:29:32 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 11:29:32 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 11:29:32 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-18 11:36:15 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 11:36:15 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 11:36:15 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-18 11:41:11 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 11:41:12 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 11:41:12 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-18 11:41:57 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 11:41:57 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 11:41:57 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-18 12:01:52 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 12:01:52 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 12:01:52 org.apache.ibatis.session.AutoMappingUnknownColumnBehavior-47[main]
+WARN: Unknown column is detected on 'com.awslabplatform.dao.courseManage.CourseDao.listByCondition' auto-mapping. Mapping parameters are [columnName=theacherId,propertyName=theacherId,propertyType=null]
+2018-03-18 12:01:52 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-18 12:02:55 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 12:02:55 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 12:02:55 org.apache.ibatis.session.AutoMappingUnknownColumnBehavior-47[main]
+WARN: Unknown column is detected on 'com.awslabplatform.dao.courseManage.CourseDao.listByCondition' auto-mapping. Mapping parameters are [columnName=theacherId,propertyName=theacherId,propertyType=null]
+2018-03-18 12:02:55 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2

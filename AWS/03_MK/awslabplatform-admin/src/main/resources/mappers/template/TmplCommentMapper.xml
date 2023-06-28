@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform_admin.dao.template.TmplCommentDao">
+
+
+	<!-- 插入模板评论 -->
+	<insert id="insertTmplComment" parameterType="TmplComment">
+		INSERT INTO tb_template_comment(
+		commentId, userId, tmplId, content, stars, commentTime, state)
+		VALUES (
+		#{commentId}, #{userId}, #{tmplId}, #{content}, #{stars}, #{commentTime}, #{state})
+	</insert>
+
+
+
+	<!-- 查询模板评论 -->
+	<sql id="tmplCommentDataCondition">
+		1=1
+		<if
+			test="condition.containsKey('tmplId') and condition.tmplId != '' and condition.tmplId != null">
+			AND tb_template_comment.tmplId = #{condition.tmplId}
+		</if>
+		<if test="condition.containsKey('state') and condition.state != null">
+			AND tb_template_comment.state = #{condition.state}
+		</if>
+	</sql>
+
+	<!-- 获取模板评论列表数据 -->
+	<select id="listTmplCommentData" parameterType="PageInfo"
+		resultType="TmplComment">
+		SELECT
+		tb_template_comment.commentId AS commentId,
+		tb_template_comment.userId AS userId,
+		tb_template_comment.tmplId AS tmplId,
+		tb_template_comment.content AS content,
+		tb_template_comment.stars AS stars,
+		tb_template_comment.commentTime AS commentTime,
+		tb_template_comment.state AS state,
+		tb_user.realName AS userRealName,
+		tb_file_info.fileUrl AS userImageUrl
+		FROM
+		tb_template_comment
+		LEFT JOIN
+		tb_user
+		ON (tb_user.userId = tb_template_comment.userId)
+		LEFT JOIN
+		tb_file_info
+		ON (tb_file_info.correlationId = tb_user.userId)
+		<where>
+			<include refid="tmplCommentDataCondition" />
+		</where>
+		<if test="sort != '' and sort != null">
+			ORDER BY ${sort} ${order}
+		</if>
+		LIMIT #{from}, #{size}
+	</select>
+
+	<!-- 获取模板评论列表总数 -->
+	<select id="getTmplCommentTotal" parameterType="PageInfo"
+		resultType="int">
+		SELECT
+		COUNT(*)
+		FROM
+		tb_template_comment
+		<where>
+			<include refid="tmplCommentDataCondition" />
+		</where>
+	</select>
+
+
+	<!-- 删除模板评论 -->
+	<update id="deleteTmplComment" parameterType="Map">
+		UPDATE
+		tb_template_comment
+		<set>
+			<if test="state != null">
+				state = #{state}
+			</if>
+		</set>
+		<where>
+			commentId = #{commentId}
+		</where>
+	</update>
+
+</mapper>

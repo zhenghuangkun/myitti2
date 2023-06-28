@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform_admin.dao.common.QuartzJobDao">
+
+	<!-- 插入任务 -->
+	<insert id="insertQuartzJob" parameterType="QuartzJob">
+		INSERT INTO tb_quartz_task(
+		jobId, jobName, jobGroupName, triggerName, triggerGroupName, jobClass,
+		jobStartTime, jobEndTime, jobState)
+		VALUES (#{jobId}, #{jobName}, #{jobGroupName}, #{triggerName},
+		#{triggerGroupName}, #{jobClass}, #{jobStartTime}, #{jobEndTime},
+		#{jobState})
+	</insert>
+
+	<!-- 更新任务 -->
+	<update id="updateQuartzJob" parameterType="QuartzJob">
+		UPDATE tb_quartz_task
+		<trim prefix="set" suffixOverrides=",">
+			<if test="jobName != null and jobName !=''">
+				jobName = #{jobName},
+			</if>
+			<if test="jobGroupName != null and jobGroupName !=''">
+				jobGroupName = #{jobGroupName},
+			</if>
+			<if test="triggerName != null and triggerName !=''">
+				triggerName = #{triggerName},
+			</if>
+			<if test="triggerGroupName != null and triggerGroupName !=''">
+				triggerGroupName = #{triggerGroupName},
+			</if>
+			<if test="jobClass != null and jobClass !=''">
+				jobClass = #{jobClass},
+			</if>
+			<if test="jobStartTime != null and jobStartTime !=''">
+				jobStartTime = #{jobStartTime},
+			</if>
+			<if test="jobEndTime != null and jobEndTime !=''">
+				jobEndTime = #{jobEndTime},
+			</if>
+			<if test="jobState != null">
+				jobState = #{jobState},
+			</if>
+		</trim>
+		<where>
+			1= 1
+			<if test="jobName != null and jobName !=''">
+				AND jobName = #{jobName}
+			</if>
+		</where>
+	</update>
+
+	<!-- 查询任务 -->
+	<select id="getQuartzJob" parameterType="Map" resultType="QuartzJob">
+		SELECT
+		tb_quartz_task.jobId,
+		tb_quartz_task.jobName,
+		tb_quartz_task.jobGroupName,
+		tb_quartz_task.triggerName,
+		tb_quartz_task.triggerGroupName,
+		tb_quartz_task.jobClass,
+		tb_quartz_task.jobStartTime,
+		tb_quartz_task.jobEndTime,
+		tb_quartz_task.jobState
+		FROM
+		tb_quartz_task
+		<where>
+			1=1
+			<if test="jobName != '' and jobName != null">
+				AND tb_quartz_task.jobName = #{jobName}
+			</if>
+			<if test="jobState != null">
+				AND tb_quartz_task.jobState = #{jobState}
+			</if>
+		</where>
+	</select>
+
+</mapper>

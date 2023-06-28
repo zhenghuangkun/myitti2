@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform.dao.courseManage.CourseDao">
+	<resultMap type="com.awslabplatform.entity.CourseComment" id="CourseCommentMap">
+		<result property="commentId" column="commentId"/>
+		<result property="userId" column="userId"/>
+		<result property="courseId" column="courseId"/>
+		<result property="content" column="content"/>
+		<result property="commentTime" column="commentTime"/>
+		<result property="score" column="score"/>
+		<association property="student" column="userId" select="getCourseCommentStudentInfo"/>
+	</resultMap>
+	<resultMap type="com.awslabplatform.entity.Student" id="StudentMap">
+		<result property="id" column="id"/>
+		<result property="stuId" column="stuId"/>
+		<result property="realName" column="realName"/>
+		<result property="mechanismId" column="mechanismId"/>
+		<result property="major" column="major"/>
+		<result property="grade" column="grade"/>
+		<result property="classes" column="classes"/>
+		<result property="phoneNum" column="phoneNum"/>
+		<result property="email" column="email"/>
+		<result property="birthday" column="birthday"/>
+		<result property="address" column="address"/>
+		<result property="picFileUrl" column="picFileUrl"/>
+		<result property="runningExperiment" column="runningExperiment"/>
+	</resultMap>
+	<resultMap type="com.awslabplatform.entity.Course" id="CourseMap">
+		<result property="courseId" column="courseId"/>
+		<result property="collegeId" column="collegeId"/>
+		<result property="specialtyId" column="specialtyId"/>
+		<result property="teacherId" column="teacherId"/>
+		<result property="courseName" column="courseName"/>
+		<result property="description" column="description"/>
+		<result property="createTime" column="createTime"/>
+		<result property="coursePicFileId" column="coursePicFileId"/>
+		<result property="commentAllowable" column="commentAllowable"/>
+		<result property="useCount" column="useCount"/>
+		<result property="avgScore" column="avgScore"/>
+		<result property="evaluateAmount" column="evaluateAmount"/>
+		<result property="status" column="status"/>
+		<result property="courseType" column="courseType"/>
+		<result property="courseTypeLevel" column="courseTypeLevel"/>
+		<result property="openRange" column="openRange"/>
+		<result property="updateTime" column="updateTime"/>
+		<result property="courseStartUpType" column="courseStartUpType"/>
+		<result property="courseStratTime" column="courseStratTime"/>
+	</resultMap>
+    <!--按id查找课程-->
+	<select id="selectByPrimaryKey" parameterType="java.lang.String" resultType="com.awslabplatform.entity.Course">
+		SELECT
+			c.courseId,	c.collegeId, c.specialtyId,	c.teacherId, c.courseName,c.description,c.createTime,
+			p.fileUrl AS coursePicFileId,c.commentAllowable,c.useCount,c.avgScore,c.evaluateAmount,c.`status`,
+			c.courseType,c.courseTypeLevel,c.openRange,c.updateTime,c.courseStartUpType,c.courseStratTime
+		FROM
+			tb_course c
+		LEFT JOIN tb_file_info p ON p.fileId=c.coursePicFileId
+		WHERE
+			courseId=#{id}
+			and c.`status`='5'
+	</select>
+<!-- 	列出课程类型 -->
+	<select id="listCourseType" resultType="com.awslabplatform.entity.CourseType">
+		SELECT
+			count(*) count ,courseType itemId,i.itemName,f.fileUrl typePic
+		FROM
+			tb_course
+		LEFT JOIN tb_dic_item i ON i.itemId = tb_course.courseType
+		LEFT JOIN tb_file_info f ON f.correlationId = tb_course.courseType
+		WHERE tb_course.`status`='5'
+		GROUP BY
+			courseType,i.itemName,f.fileUrl
+	</select>
+
+	<select id="listByCondition" parameterType="java.util.Map" resultType="com.awslabplatform.entity.Course">
+	SELECT
+		c.courseId,	c.collegeId, c.specialtyId,	c.teacherId, c.courseName,c.description,c.createTime,
+		p.fileUrl AS coursePicFileId,c.commentAllowable,c.useCount,c.avgScore,c.evaluateAmount,c.`status`,
+		i.itemName courseType, l.itemName courseTypeLevel,c.openRange,c.updateTime,c.courseStartUpType,c.courseStratTime
+	FROM
+		tb_course c
+	LEFT JOIN tb_file_info p ON p.fileId=c.coursePicFileId
+	LEFT JOIN tb_dic_item i ON i.itemId=c.courseType
+	LEFT JOIN tb_dic_item l ON l.itemId=c.courseTypeLevel
+	<where>
+		<if test="condition!=null">
+		    <foreach collection="condition" index="key" item="value" separator="and">
+       		 ${key}=#{value}
+	   		</foreach>
+	   	</if>
+	</where>
+
+	</select>
+<!-- 	关键字查找找课程 -->
+	<select id="searchCourse" parameterType="java.util.Map" resultType="com.awslabplatform.entity.Course">
+		SELECT
+		c.courseId,	c.collegeId, c.specialtyId,	c.teacherId, c.courseName,c.description,c.createTime,
+		p.fileUrl AS coursePicFileId,c.commentAllowable,c.useCount,c.avgScore,c.evaluateAmount,c.`status`,
+		c.courseType,c.courseTypeLevel,c.openRange,c.updateTime,c.courseStartUpType,c.courseStratTime
+	FROM
+		tb_course c
+	LEFT JOIN tb_file_info p ON p.fileId=c.coursePicFileId
+	<where>
+		<if test="condition!=null">
+		    <foreach collection="condition" index="key" item="value" separator="and">
+       		 ${key} like '%${value}%'
+	   		</foreach>
+	   	</if>
+	</where>
+	</select>
+
+	<select id="getRouteTotle" parameterType="java.lang.String" resultType="com.awslabplatform.entity.RouteTotle">
+		SELECT
+			totleTime,userCount
+		FROM (SELECT SUM(runtime) totleTime
+				FROM tb_experiment e 
+				LEFT JOIN tb_course cc ON cc.courseId =e.courseId
+				WHERE cc.courseType=#{courseType}
+				AND cc.`status`='5' ) a,
+
+				(SELECT 
+				SUM(c.useCount) userCount
+				FROM tb_course	c	
+				WHERE c.courseType=#{courseType}
+				AND c.`status`='5' ) b
+	</select>
+<!-- 	添加新的课程记录 -->
+	<insert id="addMyCourse" parameterType="com.awslabplatform.entity.MyCourse">
+		INSERT INTO
+			tb_mycourse
+			(id,studentId,courseId,courseName,coursePic,experimentCount,
+			lastExperimentId,lastExperimentName,lastExperimentNo,finishedExperimentIds)
+		VALUES
+			(#{id},#{studentId},#{courseId},#{courseName},#{coursePic},#{experimentCount},
+			#{lastExperimentId},#{lastExperimentName},#{lastExperimentNo},#{finishedExperimentIds})
+	</insert>
+<!-- 	添加新的实验记录 -->
+	<update id="addExperiment" parameterType="com.awslabplatform.entity.MyCourse">
+		UPDATE
+			tb_mycourse
+		SET
+		<if test="lastExperimentId!=null and ''!=lastExperimentId">
+			lastExperimentId=#{lastExperimentId},
+		</if>
+		<if test="lastExperimentName!=null and ''!=lastExperimentName">
+			lastExperimentName=#{lastExperimentName},
+		</if>
+		<if test="lastExperimentNo!=null and ''!=lastExperimentNo">
+			lastExperimentNo=#{lastExperimentNo},
+		</if>
+		
+			finishedExperimentIds=#{finishedExperimentIds}
+		WHERE
+			id=#{id}
+	</update>
+<!-- 	列出我的课程记录 -->
+	<select id="listMyCourse" parameterType="java.lang.String" resultType="com.awslabplatform.entity.MyCourse">
+		SELECT
+			tb_mycourse.id,tb_mycourse.courseId,tb_mycourse.studentId,tb_mycourse.courseName,tb_mycourse.coursePic,
+			tb_mycourse.experimentCount,tb_mycourse.lastExperimentId,tb_mycourse.lastExperimentName,
+			tb_mycourse.lastExperimentNo,tb_mycourse.finishedExperimentIds
+		FROM
+			tb_mycourse
+		LEFT JOIN tb_course c ON c.courseId=tb_mycourse.courseId
+		WHERE
+			studentId=#{studentId}
+		AND c.`status`='5'
+	</select>
+<!-- 	查找指定的课程记录 -->
+	<select id="findOneRecord"  resultType="com.awslabplatform.entity.MyCourse">
+		SELECT
+			tb_mycourse.id,tb_mycourse.courseId,tb_mycourse.studentId,tb_mycourse.courseName,tb_mycourse.coursePic,
+			tb_mycourse.experimentCount,tb_mycourse.lastExperimentId,tb_mycourse.lastExperimentName,
+			tb_mycourse.lastExperimentNo,tb_mycourse.finishedExperimentIds
+		FROM
+			tb_mycourse
+		WHERE
+			tb_mycourse.studentId=#{studentId}
+		AND
+			tb_mycourse.courseId=#{courseId}
+	</select>
+<!-- 	新增课程评论 -->
+	<insert id="addCourseComment" parameterType="com.awslabplatform.entity.CourseComment">
+		INSERT INTO
+			tb_course_comment
+			(commentId,userId,courseId,content,commentTime,score)
+		VALUES
+			(#{commentId},#{userId},#{courseId},#{content},#{commentTime},#{score})
+	</insert>
+<!-- 	列出课程评论 -->
+	<select id="getCourseComments" parameterType="String" resultMap="CourseCommentMap">
+		SELECT
+			c.commentId,c.userId,c.courseId,c.content,c.commentTime,c.score
+		FROM
+			tb_course_comment c
+		WHERE
+			c.courseId=#{courseId}
+	</select>
+<!-- 	查找评论中的学生 -->
+	<select id="getCourseCommentStudentInfo" parameterType="java.lang.String" resultMap="StudentMap">
+		SELECT
+			s.id,s.stuId,s.realName,s.mechanismId,s.major,s.grade,s.classes,s.phoneNum,s.email,s.birthday,s.picFileId,s.address,s.runningExperiment,f.fileUrl AS picFileUrl
+		FROM
+			tb_student AS s
+		LEFT JOIN
+			tb_file_info AS f
+		ON
+			f.fileId = s.picFileId
+		<where>
+			s.id=#{userId}
+		</where>
+	</select>
+<!-- 	修改课程平均分和评论数 -->
+	<update id="updateScore" parameterType="com.awslabplatform.entity.Course">
+	UPDATE
+		tb_course c
+	SET
+		c.evaluateAmount=#{evaluateAmount},
+		c.useCount=#{useCount},
+		c.avgScore=(SELECT
+				avg(score)
+			FROM
+				tb_course_comment
+			WHERE
+				courseId=#{courseId})
+	WHERE
+		c.courseId=#{courseId}
+	</update>
+<!-- 	查找本课程的教师 -->
+	<select id="getTeacherByCourseId" parameterType="java.lang.String" resultType="com.awslabplatform.entity.User">
+		SELECT
+			u.userId,u.phoneNum,u.realName,u.email,u.userPwd,u.roleType,u.isAwsIam,u.IAM,
+			u.schoolId,m.mechanismName AS departmentId,u.birthday,u.address,u.createBy,u.createTime,u.userState
+		FROM
+			tb_user u
+		LEFT JOIN tb_course c ON c.teacherId=u.userId
+		LEFT JOIN tb_mechanism m ON m.mechanismId=u.departmentId
+		WHERE
+			c.courseId=#{courseId}
+	</select>
+
+	<select id="getCourseById" parameterType="java.lang.String" resultMap="CourseMap">
+		SELECT
+			collegeId, specialtyId, teacherId, courseName, description, createTime, coursePicFileId, commentAllowable,
+			useCount, avgScore, evaluateAmount, status, courseType, courseTypeLevel, openRange, updateTime, courseStartUpType, courseStratTime
+		FROM
+			tb_course
+		<where>
+			tb_course.courseId=#{courseId}
+		</where>
+	</select>
+
+	<select id="getCourseIdByExperimentId" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			courseId
+		FROM
+			tb_experiment
+		<where>
+			tb_experiment.experimentId=#{experimentId}
+		</where>
+	</select>
+</mapper>

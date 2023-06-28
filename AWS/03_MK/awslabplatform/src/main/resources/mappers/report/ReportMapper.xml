@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform.dao.reportManage.ReportDao">
+	
+    
+	<!-- 列出学生的实验报告 -->
+	<select id="listStudentReport" parameterType="java.lang.String" resultType="com.awslabplatform.entity.Report">
+		SELECT
+			r.id,r.experimentId,r.studentId,e.experimentName,r.content,r.filedId,r.createTime,r.`comment`,r.score,r.remarkTime
+		FROM
+			tb_report r
+		LEFT JOIN tb_experiment e ON e.experimentId = r.experimentId
+		WHERE
+			r.studentId=#{studentId}
+	</select>
+	<!-- 找出某个实验的报告 -->
+	<select id="findByExperimentId" parameterType="java.lang.String" resultType="com.awslabplatform.entity.Report">
+		SELECT
+			r.id,r.experimentId,r.studentId,r.experimentName,r.content,r.filedId,r.createTime,r.`comment`,r.score,r.remarkTime
+		FROM
+			tb_report r
+		WHERE
+			r.experimentId=#{experimentId}
+		AND
+			r.studentId=#{studentId}
+	</select>
+	<!-- 保存实验报告	 -->
+	<insert id="addReport" parameterType="com.awslabplatform.entity.Report">
+		INSERT INTO 
+			tb_report
+			(id,experimentId,studentId,experimentName,content,createTime)
+		VALUES (#{id},#{experimentId},#{studentId},#{experimentName},#{content},#{createTime})
+	</insert>
+	<!-- 修改实验报告	 -->
+	<update id="updateReport" parameterType="com.awslabplatform.entity.Report">
+		UPDATE
+			tb_report
+		SET
+			experimentId=#{experimentId},
+			studentId=#{studentId},
+			experimentName=#{experimentName},
+			content=#{content},
+			filedId=#{filedId},
+			createTime=#{createTime}
+		WHERE
+		id=#{id}
+	</update>
+</mapper>

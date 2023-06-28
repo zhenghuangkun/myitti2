@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform_admin.dao.courseManage.ExperimentGroupDao">
+
+	<!-- ztree 用Map -->
+	<resultMap type="com.awslabplatform_admin.entity.ExperimentGroup" id="ExperimentGroupListMap">
+		<result property="groupId" column="groupId"/>
+		<result property="groupName" column="groupName"/>
+		<result property="name" column="groupName"/>
+		<result property="createAuthorId" column="createAuthorId"/>
+		<result property="createDate" column="createDate"/>
+		<result property="state" column="state"/>
+		<collection property="children" column="groupId" select="listUserByGroupId"/>
+	</resultMap>
+	
+	<!-- 非ztree用 -->
+	<resultMap type="com.awslabplatform_admin.entity.ExperimentGroup" id="ExperimentGroupListMapNoZtree">
+		<result property="groupId" column="groupId"/>
+		<result property="groupName" column="groupName"/>
+		<result property="name" column="groupName"/>
+		<result property="createAuthorId" column="createAuthorId"/>
+		<result property="createAuthorName" column="createAuthorName"/>
+		<result property="createDate" column="createDate"/>
+		<result property="state" column="state"/>
+		<association property="memberNum" column="groupId" select="getGroupMemberTotal"/>
+		<association property="courseNum" column="groupId" select="getGroupCourseTotal"/>
+		<collection property="children" column="groupId" select="listUserByGroupIdAllInfo"/>
+	</resultMap>
+	
+	<!-- 分页查询用Map -->
+	<resultMap type="com.awslabplatform_admin.entity.ExperimentGroup" id="pagingExperimentGroupListMap">
+		<result property="groupId" column="groupId"/>
+		<result property="groupName" column="groupName"/>
+		<result property="createAuthorId" column="createAuthorId"/>
+		<result property="createAuthorName" column="createAuthorName"/>
+		<result property="createDate" column="createDate"/>
+		<result property="state" column="state"/>
+		<association property="memberNum" column="groupId" select="getGroupMemberTotal"/>
+		<association property="courseNum" column="groupId" select="getGroupCourseTotal"/>
+		<collection property="children" column="groupId" select="listUserByGroupIdAllInfo"/>
+	</resultMap>
+
+	<resultMap type="com.awslabplatform_admin.entity.Student" id="StudentMap">
+		<result property="id" column="id"/>
+		<result property="stuId" column="stuId"/>
+		<result property="realName" column="realName"/>
+		<result property="name" column="name"/>
+		<result property="mechanismId" column="mechanismId"/>
+		<result property="mechanismName" column="mechanismName"/>
+		<result property="major" column="major"/>
+		<result property="majorName" column="majorName"/>
+		<result property="grade" column="grade"/>
+		<result property="gradeName" column="gradeName"/>
+		<result property="classes" column="classes"/>
+		<result property="classesName" column="classesName"/>
+		<result property="phoneNum" column="phoneNum"/>
+		<result property="email" column="email"/>
+		<result property="birthday" column="birthday"/>
+		<result property="picFileId" column="picFileId"/>
+		<result property="address" column="address"/>
+		<result property="picFileUrl" column="picFileUrl"/>
+		<result property="runningExperiment" column="runningExperiment"/>
+	</resultMap>
+
+	<select id="findCourseExperimentGroupByCourseId" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			groupId
+		FROM
+			tb_course_experimentgroup AS g
+		WHERE
+			g.courseId = #{courseId}
+	</select>
+
+	<select id="listAllGroup" parameterType="String" resultMap="ExperimentGroupListMap">
+		SELECT
+			groupId,groupName,createAuthorId,createDate,state
+		FROM
+			tb_experiment_group
+		WHERE
+			state = 1
+			<if test="createAuthorId != null and createAuthorId!=''">
+			AND createAuthorId = #{createAuthorId}
+			</if>
+	</select>
+
+	<select id="listUserByGroupId" parameterType="java.lang.String" resultMap="StudentMap">
+		SELECT
+			gu.userId,u.id,u.realName,u.realName AS name
+		FROM
+			tb_experiment_group_user as gu,tb_student as u
+		WHERE
+			gu.userId = u.id and gu.groupId = #{groupId}
+	</select>
+	
+	<!-- 分页查询条件 -->
+	<sql id="experimentGroupInfoCondition">
+
+		<if test="condition.containsKey('groupName')">
+			AND groupName LIKE CONCAT('%','${condition.groupName}','%')
+		</if>
+		
+		<if test="condition.containsKey('teacherId')">
+			AND createAuthorId = #{condition.teacherId}
+		</if>
+	</sql>
+	
+	<!-- 取得所有实验组分页信息 -->
+	<select id="listExperimentGroupInfo" parameterType="PageInfo" resultMap="pagingExperimentGroupListMap">
+		SELECT
+			g.groupId,g.groupName,g.createAuthorId,u.realName AS createAuthorName,g.createDate,g.state
+		FROM
+			tb_experiment_group AS g
+		LEFT JOIN
+			tb_user AS u
+		ON
+			g.createAuthorId = u.userId
+		<where>
+			1 = 1
+			<include refid="experimentGroupInfoCondition"/>
+			<!-- AND status != 0 已删除的状态不查找 -暂时没有删除的功能 -->
+		</where>
+		ORDER BY  convert(groupName using gbk) ASC  <!-- 按照拼音排序 -->
+		LIMIT #{from}, #{size}
+	</select>
+
+	<select id="listUserByGroupIdAllInfo" parameterType="java.lang.String" resultMap="StudentMap">
+		select
+			s.id,s.stuId,s.realName,s.mechanismId,mm.mechanismName AS mechanismName,s.major,ms.mechanismName AS majorName,s.grade,g.mechanismName AS gradeName,s.classes,c.mechanismName AS classesName,s.phoneNum,s.email,s.birthday,s.picFileId,f.fileUrl AS picFileUrl,s.address,s.runningExperiment
+		FROM
+			tb_experiment_group_user as gu,tb_student as s
+		LEFT JOIN 
+			tb_mechanism AS mm
+		ON
+			s.mechanismId = mm.mechanismId 
+		LEFT JOIN 
+			tb_mechanism AS ms
+		ON
+			s.major = ms.mechanismId 
+		LEFT JOIN 
+			tb_mechanism AS g
+		ON 
+			s.grade = g.mechanismId
+		LEFT JOIN 
+			tb_mechanism AS c
+		ON 
+			s.classes = c.mechanismId
+		LEFT JOIN
+			tb_file_info AS f
+		ON
+			s.picFileId = f.fileId	 
+		where
+			gu.userId = s.id and gu.groupId = #{groupId}
+	</select>
+
+	<!-- 分页查询总数 -->
+	<select id="listExperimentGroupTotal" parameterType="PageInfo" resultType="int">
+		SELECT COUNT(*)
+		FROM
+			tb_experiment_group
+		<where>
+			1 = 1
+			<include refid="experimentGroupInfoCondition"/>
+			<!-- AND status != 0 已删除的状态不查找 -暂时没有删除的功能 -->
+		</where>
+	</select>
+	
+	<!-- 取得组成员总数 -->
+	<select id="getGroupMemberTotal" parameterType="java.lang.String" resultType="int">
+		SELECT COUNT(*)
+		FROM
+			tb_experiment_group_user
+		<where>
+			groupId = #{groupId}
+		</where>
+	</select>
+	
+	
+	<!-- 取得组关联的课程总数 -->
+	<select id="getGroupCourseTotal" parameterType="java.lang.String" resultType="int">
+		SELECT COUNT(*)
+		FROM
+			tb_course_experimentgroup
+		<where>
+			groupId = #{groupId}
+		</where>
+	</select>
+	
+	
+	<update id="updateExperimentGroupUserCheckState" parameterType="List">
+		UPDATE tb_experiment_group_user
+		<set>
+			chenked	= 1
+		</set>
+		<where>
+			<!-- 1 = 1 --> <!-- 防止sql语句报错 -->
+			<foreach collection="list" item="experimentList" open="(" separator="OR" close=")">
+        			<if test="experimentList.groupId != null">
+        				(
+        				groupId = #{experimentList.groupId}
+        				AND
+        				<foreach collection="experimentList.children" item="childrenList" open="(" separator="OR" close=")">
+        					<if test="childrenList.userId != null">
+        						userId = #{childrenList.userId}
+        					</if>
+        				</foreach>
+        				)
+        			</if>
+
+    		</foreach>
+
+		</where>
+	</update>
+
+	<insert id="addCourseExperimentGroupMapping">
+		INSERT INTO tb_course_experimentgroup(courseId, groupId)
+        VALUES
+        <foreach collection="groupList" item="experimentGroup" separator="," >
+			(
+			#{courseId},#{experimentGroup.groupId}
+			)
+		</foreach>
+	</insert>
+
+	<delete id="deleteCourseExperimentGroupMapping">
+		DELETE
+		FROM
+			tb_course_experimentgroup
+		WHERE
+			courseId = #{courseId}
+	</delete>
+
+	<!-- ztree用 -->
+	<select id="getExperimentGroupByGroupId" parameterType="java.lang.String" resultMap="ExperimentGroupListMap">
+		SELECT groupId, groupName, createAuthorId, createDate, state
+		FROM tb_experiment_group
+		<where>
+			groupId=#{groupId}
+		</where>
+	</select>
+
+	<select id="getExperimentGroupByGroupIdNoZtree" parameterType="java.lang.String" resultMap="ExperimentGroupListMapNoZtree">
+		SELECT
+			g.groupId,g.groupName,g.createAuthorId,u.realName AS createAuthorName,g.createDate,g.state
+		FROM
+			tb_experiment_group AS g
+		LEFT JOIN
+			tb_user AS u
+		ON
+			g.createAuthorId = u.userId
+		<where>
+			groupId=#{groupId}
+		</where>
+	</select>
+	
+
+	<sql id="studentInfoCondition">
+
+		<if test="condition.containsKey('findValue')">
+			AND (s.realName LIKE CONCAT('%','${condition.findValue}','%')
+				OR ms.mechanismName LIKE CONCAT('%','${condition.findValue}','%')
+				OR g.mechanismName LIKE CONCAT('%','${condition.findValue}','%')
+				OR s.phoneNum LIKE CONCAT('%','${condition.findValue}','%')
+				OR s.email LIKE CONCAT('%','${condition.findValue}','%'))
+		</if>
+		<if test="condition.containsKey('collegeId')">
+			AND s.mechanismId = #{condition.collegeId}
+		</if>
+	</sql>
+
+	<select id="getStudentInfo" parameterType="PageInfo" resultMap="StudentMap">
+		SELECT
+			s.id,s.stuId,s.realName,s.mechanismId,mm.mechanismName AS mechanismName,s.major,ms.mechanismName AS majorName,s.grade,g.mechanismName AS gradeName,s.classes,c.mechanismName AS classesName,s.phoneNum,s.email,s.birthday,s.picFileId,f.fileUrl AS picFileUrl,s.address,s.runningExperiment
+		FROM
+			tb_student AS s
+		LEFT JOIN
+			tb_mechanism AS mm
+		ON
+			s.mechanismId = mm.mechanismId
+		LEFT JOIN
+			tb_mechanism AS ms
+		ON
+			s.major = ms.mechanismId
+		LEFT JOIN
+			tb_mechanism AS g
+		ON
+			s.grade = g.mechanismId
+		LEFT JOIN
+			tb_mechanism AS c
+		ON
+			s.classes = c.mechanismName
+		LEFT JOIN
+			tb_file_info AS f
+		ON
+			s.picFileId = f.fileId
+		<where>
+			1 = 1
+			<include refid="studentInfoCondition"/>
+			AND s.userState != 0 <!-- 已删除的状态不查找 -->
+		</where>
+		LIMIT #{from}, #{size}
+	</select>
+
+	<select id="getStudentInfoTotal" parameterType="PageInfo" resultType="int">
+		SELECT COUNT(*)
+		FROM
+			tb_student AS s
+		LEFT JOIN
+			tb_mechanism AS mm
+		ON
+			s.mechanismId = mm.mechanismId
+		LEFT JOIN
+			tb_mechanism AS ms
+		ON
+			s.major = ms.mechanismId
+		LEFT JOIN
+			tb_mechanism AS g
+		ON
+			s.grade = g.mechanismId
+		LEFT JOIN
+			tb_mechanism AS c
+		ON
+			s.classes = c.mechanismName
+		<where>
+			1 = 1
+			<include refid="studentInfoCondition"/>
+			AND s.userState != 0 <!-- 已删除的状态不查找 -->
+		</where>
+	</select>
+
+	<insert id="addNewGroup" parameterType="ExperimentGroup">
+		INSERT INTO tb_experiment_group
+		VALUES (#{groupId}, #{groupName}, #{createAuthorId}, #{createDate},#{state})
+	</insert>
+	
+	<insert id="addMultiStudentToExperimentGroup">
+		INSERT INTO tb_experiment_group_user(groupId, userId)
+        VALUES
+        <foreach collection="studentArray" item="item" separator="," >
+			(#{groupId}, #{item})
+		</foreach>
+	</insert>
+	
+	<update id="updateExperimentGroup" parameterType="ExperimentGroup">
+		UPDATE tb_experiment_group
+		SET
+			groupName = #{groupName},
+			createDate = #{createDate}
+		WHERE
+			groupId = #{groupId}
+	</update>
+	
+	<delete id="deleteStudentFromExperimentGroup" parameterType="String">
+		DELETE FROM 
+			tb_experiment_group_user
+		WHERE
+			groupId = #{groupId}
+	</delete>
+	
+	
+	<!-- 禁用实验组 -->
+	<update id="disableExperimentGroup" parameterType="String">
+		UPDATE tb_experiment_group
+		<set>
+			state	= 0   <!-- 设置状态为0 -->
+		</set>
+		<where>
+			groupId = #{groupId}
+		</where>
+	</update>
+	
+	<!-- 启用实验组 -->
+	<update id="enableExperimentGroup" parameterType="String">
+		UPDATE tb_experiment_group
+		<set>
+			state	= 1		<!-- 设置状态为1 -->
+		</set>
+		<where>
+			groupId = #{groupId}
+		</where>
+	</update>
+	
+	
+</mapper>

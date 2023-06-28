@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.awslabplatform_admin.dao.billing.BillingDao">
+	<resultMap type="com.awslabplatform_admin.entity.Billing" id="BillingMap">
+		<result property="invoiceID" column="InvoiceID"/>
+		<result property="payerAccountId" column="PayerAccountId"/>
+		<result property="linkedAccountId" column="LinkedAccountId"/>
+		<result property="recordType" column="RecordType"/>
+		<result property="recordID" column="RecordID"/>
+		<result property="billingPeriodStartDate" column="BillingPeriodStartDate"/>
+		<result property="billingPeriodEndDate" column="BillingPeriodEndDate"/>
+		<result property="invoiceDate" column="InvoiceDate"/>
+		<result property="payerAccountName" column="PayerAccountName"/>
+		<result property="linkedAccountName" column="LinkedAccountName"/>
+		<result property="taxationAddress" column="TaxationAddress"/>
+		<result property="payerPONumber" column="PayerPONumber"/>
+		<result property="productCode" column="ProductCode"/>
+		<result property="productName" column="ProductName"/>
+		<result property="sellerOfRecord" column="SellerOfRecord"/>
+		<result property="usageType" column="UsageType"/>
+		<result property="operation" column="Operation"/>
+		<result property="rateId" column="RateId"/>
+		<result property="itemDescription" column="ItemDescription"/>
+		<result property="usageStartDate" column="UsageStartDate"/>
+		<result property="usageEndDate" column="UsageEndDate"/>
+		<result property="usageQuantity" column="UsageQuantity"/>
+		<result property="blendedRate" column="BlendedRate"/>
+		<result property="currencyCode" column="CurrencyCode"/>
+		<result property="costBeforeTax" column="CostBeforeTax"/>
+		<result property="credits" column="Credits"/>
+		<result property="taxAmount" column="TaxAmount"/>
+		<result property="taxType" column="TaxType"/>
+		<result property="totalCost" column="TotalCost"/>
+	 </resultMap>
+
+	  	<resultMap type="com.awslabplatform_admin.entity.QuotaAllocation" id="QuotaAllocationMap">
+		<result property="id" column="id"/>
+		<result property="accountId" column="accountId"/>
+		<result property="totalAmount" column="totalAmount"/>
+		<result property="invoiceAmount" column="invoiceAmount"/>
+	   </resultMap>
+
+	    <!-- 查询月份账单 -->
+	   <select id="selMonthBill"  parameterType="Map" resultType="Billing" >
+	   SELECT 
+	       	 b.CostBeforeTax as totalCost
+       FROM
+		  	 tb_billing b		
+		WHERE
+			b.RecordType= 'AccountTotal'
+			AND b.LinkedAccountId=#{moneyAccountId}
+			AND b.BillingPeriodStartDate = #{moneymonth}
+			ORDER BY b.CostBeforeTax DESC
+			LIMIT 1
+	  </select>
+	  
+	  <!-- 查询各个院系每个月份和已花费金额 和已开发票金额 -->
+<!-- 	  <select id="departmentsCost" parameterType="Map" resultType="Billing" > -->
+<!-- 	  SELECT a.CostBeforeTax as totalCost,b.totalAmount as totalAmount,b.invoiceAmount as invoiceAmount FROM tb_billing	as a -->
+<!--        LEFT OUTER JOIN  tb_quota_allocation as b on(b.accountId=a.LinkedAccountId) -->
+<!--        WHERE  -->
+<!-- 			a.RecordType= 'AccountTotal' -->
+<!-- 			AND a.LinkedAccountId=#{accountId} -->
+<!-- 			AND a.BillingPeriodStartDate = #{month} AND b.totalMonth=#{month} -->
+<!-- 			ORDER BY a.CostBeforeTax DESC -->
+<!-- 			LIMIT 1 -->
+<!-- 	  </select> -->
+	  
+	   <!-- 查询每个院系的月份额度 -->
+	  <select id="aCombination" parameterType="Map" resultType="QuotaAllocation" >
+		select a.totalAmount,a.id,a.invoiceAmount
+		from tb_quota_allocation as a 
+		where a.accountId=#{accountId}
+		and a.totalMonth=#{totalMonth}
+	  </select>
+	  
+	   <!-- 用户修改月额度 -->
+		<insert id="insertTotalamount" parameterType="QuotaAllocation">
+	      INSERT INTO tb_quota_allocation(
+	       	id,accountId,totalAmount,invoiceAmount,totalMonth)
+	      VALUES (
+	          #{id},#{accountId},#{totalAmount},#{invoiceAmount},#{totalMonth})
+		</insert>
+	  
+	  <!-- 修改已开发票金额 -->
+	  <update id="updateInvoice" parameterType="Map">
+	   UPDATE tb_quota_allocation 
+	   <set>
+			<if test="totalAmount != null">
+				totalAmount=#{totalAmount}
+			</if>
+			<if test="invoiceByvalue != null">
+				invoiceAmount=#{invoiceByvalue}
+			</if>
+		</set>
+		<where>
+			accountId=#{accountId} and totalMonth=#{totalMonth}
+		</where>
+	  </update>
+</mapper>

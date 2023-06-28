@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.awslabplatform_admin.dao.awsAccountManage.AwsIamsDao">
+	<resultMap type="com.awslabplatform_admin.entity.AwsIams" id="AwsIamsMap">
+		<result property="id" column="id"/>
+		<result property="iAMName" column="iAMName"/>
+		<result property="awsAccount" column="awsAccount"/>
+		<result property="iAMtype" column="iAMtype"/>
+		<result property="accessKeyID" column="accessKeyID"/>
+		<result property="accessKey" column="accessKey"/>
+		<result property="password" column="password"/>
+		<result property="IAMKind" column="IAMKind"/>
+		
+		<result property="consoleLoginLink" column="consoleLoginLink"/>
+		<result property="region" column="region"/>
+		<result property="isUsed" column="isUsed"/>
+		<result property="iAMStatus" column="iAMStatus"/>
+		<result property="operator" column="operator"/>
+		<result property="createTime" column="createTime"/>
+		<result property="accountId" column="accountId"/>
+	</resultMap>
+	
+	<!-- 查询添加IAMName名称与awsAccount是否已经存在 author:wy -->
+	<select id="countAwsIamtData" parameterType="AwsIams" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tb_aws_iam
+		<where>
+			1 = 1
+			<if test="iAMName != null">
+				AND iAMName = #{iAMName}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 插入添加AWS IAM账户信息 author:wy -->
+	<insert id="insert" parameterType="AwsIams">
+	<selectKey keyProperty="id" resultType="java.lang.String" order="BEFORE">
+         SELECT REPLACE(UUID(),'-','')
+ 	</selectKey>
+       INSERT INTO tb_aws_iam(
+	       	id,iAMName,password,awsAccount,accessKeyID,accessKey,IAMKind,createTime,consoleLoginLink)
+       VALUES (
+           #{id},#{iAMName},#{password},#{awsAccount},#{accessKeyID},#{accessKey},#{IAMKind},#{createTime},#{consoleLoginLink})
+	</insert>
+
+	<!-- 获取AWS Iam的数据，将数据显示在表格上 author:wy -->
+	<select id="getAwsIamData"  parameterType="PageInfo" resultType="AwsIams">
+     SELECT 
+	       a.id,a.iAMName,a.awsAccount,c.accountId AS tb_accountid,a.iAMtype,a.accessKeyID,a.region,
+		   a.accessKey,a.isUsed,a.iAMStatus,a.operator,a.createTime,a.password,a.consoleLoginLink
+     FROM
+          tb_aws_iam AS a
+     LEFT OUTER JOIN tb_user AS b ON (a.id=b.IAM)
+     LEFT OUTER JOIN tb_aws_account c ON(a.awsAccount=c.id)
+	   <where>
+			1 = 1
+			<choose>
+			   <when test="condition.containsKey('userRoleType') and condition.userRoleType==2">
+			    AND (a.IAMtype='f6b004d630c611e8bb7400163e0ce5d1' OR a.IAMtype='00a3fe7c30c711e8bb7400163e0ce5d1')
+			   </when>
+            </choose>
+ 			<if test="condition.containsKey('iAMStatus')">
+				AND a.iAMStatus = #{condition.iAMStatus}
+			</if> 
+			<if test="condition.containsKey('iAMName') and condition.iAMName != ''">
+				AND a.iAMName like concat('%',#{condition.iAMName},'%')
+			</if>
+			<if test="condition.containsKey('isUsed')">
+				AND a.isUsed = #{condition.isUsed}
+			</if> 
+	   </where>
+	   LIMIT #{from}, #{size}
+	</select>
+
+   <!-- 查询AWS Iam数据的数量 author:wy -->
+	<select id="countAwsIams" parameterType="PageInfo" resultType="int">
+     SELECT 
+	       COUNT(*)
+     FROM
+          tb_aws_iam AS a
+     LEFT OUTER JOIN tb_user AS b ON (a.id=b.IAM)
+     LEFT OUTER JOIN tb_aws_account c ON(a.awsAccount=c.id)
+	   <where>
+			1 = 1
+			<choose>
+			   <when test="condition.containsKey('userRoleType') and condition.userRoleType==2">
+			     AND (a.IAMtype='f6b004d630c611e8bb7400163e0ce5d1' OR a.IAMtype='00a3fe7c30c711e8bb7400163e0ce5d1')
+			   </when>
+            </choose>
+ 			<if test="condition.containsKey('iAMStatus')">
+				AND a.iAMStatus = #{condition.iAMStatus}
+			</if> 
+			<if test="condition.containsKey('iAMName') and condition.iAMName != ''">
+				AND a.iAMName like concat('%',#{condition.iAMName},'%')
+			</if>
+			<if test="condition.containsKey('isUsed')">
+				AND a.isUsed = #{condition.isUsed}
+			</if> 
+	   </where>
+	</select>
+	
+	<!-- 假删除AWS Iam数据的数据信息-->
+    <delete id="deleteAwsIamData" parameterType="String" >
+        UPDATE tb_aws_iam SET iAMStatus = 1 WHERE id = #{id}
+  	</delete>
+
+	<!-- CH--><!-- 根据条件获取AWS IAM的数据，将数据显示在编辑的页面上 author:wy -->
+	<select id="selectIdAwsIamData" parameterType="String" resultType="AwsIams">
+		SELECT a.id,a.iAMName,a.awsAccount,a.iAMtype,a.accessKeyID,
+		a.accessKey,a.isUsed,a.iAMStatus,
+		a.operator,a.createTime,a.password,a.consoleLoginLink
+        FROM tb_user AS u
+        LEFT JOIN tb_aws_account AS c ON c.departmentId=u.departmentId
+        LEFT JOIN tb_aws_accountPool AS p ON p.payAccountID=c.accountId
+        LEFT JOIN tb_aws_iam AS a ON a.awsAccount=p.id
+        WHERE p.useType= #{useType}
+        AND p.isActive= #{isActive}
+        AND p.isDelete= #{isDelete}
+        AND a.IAMKind= #{IamKind}
+        AND u.departmentId= #{departmentId}
+        AND u.userState = #{userState}
+        AND c.accountStause =#{accountStause}
+        AND c.isActive =#{accountActive}
+        LIMIT 1
+	</select>
+
+	<!-- 根据表格选中的行获取的ID，来获取IAM User账户数据信息 -->
+	<select id="selectAwsIamData" parameterType="AwsIams" resultMap="AwsIamsMap">
+		SELECT
+	       tb_aws_iam.id,tb_aws_iam.iAMName,tb_aws_iam.awsAccount,tb_aws_iam.accessKeyID,tb_aws_iam.accessKey,tb_aws_iam.createTime,tb_aws_iam.IAMKind,
+		   tb_aws_iam.password,tb_aws_iam.consoleLoginLink,tb_aws_iam.iAMtype,tb_aws_iam.isUsed,tb_aws_iam.iAMStatus,tb_aws_iam.operator
+        FROM
+           tb_aws_iam
+	   <where>
+			1 = 1
+			<if test="awsAccount!= null">
+				AND tb_aws_iam.awsAccount =#{awsAccount}
+			</if>
+			ORDER BY tb_aws_iam.IAMKind
+	   </where>
+	</select>
+	
+	<!-- 编辑是判断数据库的数量是否存在 author:wy -->
+	<select id="countEditAwsIamData" parameterType="PageInfo" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tb_aws_iam
+		<where>
+			1 = 1
+			<if test="condition.containsKey('iAMName') and condition.iAMName != ''">
+				AND tb_aws_iam.iAMName = #{condition.iAMName}
+			</if>
+		</where>
+	</select>
+		
+	<!-- 修改AWS IAM的数据 author:wy -->
+	<update id="updateByPrimaryKeySelective" parameterType="AwsIams">
+		UPDATE tb_aws_iam
+		<set>
+			<if test="iAMName != null">
+				iAMName = #{iAMName},
+			</if>
+			<if test="password != null">
+				password = #{password},
+			</if>
+			<if test="IAMKind != null">
+				IAMKind = #{IAMKind},
+			</if>
+			<if test="awsAccount != null">
+				awsAccount = #{awsAccount},
+			</if>
+			<if test="accessKeyID != null">
+				accessKeyID = #{accessKeyID},
+			</if>
+			<if test="accessKey != null">
+				accessKey = #{accessKey},
+			</if>
+			<if test="createTime != null">
+				createTime = #{createTime},
+			</if>
+			<if test="consoleLoginLink != null">
+				consoleLoginLink = #{consoleLoginLink},
+			</if>
+			<if test="region != null">
+				region = #{region},
+			</if>			
+			<if test="iAMtype != null">
+				iAMtype = #{iAMtype},
+			</if>
+			<if test="isUsed !=null">
+			  isUsed=#{isUsed},
+			</if>
+		</set>
+		<where>
+			id = #{id}
+		</where>
+	</update>
+	
+	<!-- 根据条件accountId和可用IAM来获取获取AWS IAM的数据 author:czy -->
+	<select id="findByIAMData" parameterType="AwsIams" resultType="AwsIams">
+		SELECT
+			tb_aws_iam.id,tb_aws_iam.iAMName,tb_aws_iam.awsAccount,tb_aws_iam.iAMtype,tb_aws_iam.accessKeyID,
+		   tb_aws_iam.accessKey,tb_aws_iam.region,tb_aws_iam.isUsed,tb_aws_iam.iAMStatus,tb_aws_iam.operator,tb_aws_iam.createTime
+		FROM
+			tb_aws_iam
+		LEFT OUTER JOIN tb_dic_item on(tb_aws_iam.IAMtype=tb_dic_item.itemId)
+	   <where>
+			1 = 1
+			<if test="awsAccount!=''">
+				AND tb_aws_iam.awsAccount =#{awsAccount}
+			</if>
+			<if test="isUsed!= null">
+				AND tb_aws_iam.isUsed =#{isUsed}
+			</if>
+			<if test="itemValue!= null">
+				AND tb_dic_item.itemValue =#{itemValue}
+			</if>
+			<if test="iAMStatus!= null">
+				AND tb_aws_iam.iAMStatus =#{iAMStatus}
+			</if>
+	   </where>
+	</select>
+<!-- 查找平台管理员的IAM用于定时导入账单 -->
+	<select id="getPlatformIAM" resultType="AwsIams">
+		SELECT 
+			iam.accessKeyID,iam.accessKey,iam.region,account.accountId as awsAccount
+		FROM tb_user 
+		LEFT JOIN tb_aws_iam  iam ON iam.id = tb_user.IAM
+		LEFT JOIN tb_aws_account account ON account.id=iam.awsAccount
+		WHERE tb_user.roleType=1 AND tb_user.userState=1
+		LIMIT 1
+	</select>
+</mapper>

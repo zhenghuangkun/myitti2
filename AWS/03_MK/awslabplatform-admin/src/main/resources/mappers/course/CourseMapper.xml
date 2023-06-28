@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform_admin.dao.courseManage.CourseDao">
+
+	<resultMap type="com.awslabplatform_admin.entity.Course" id="CourseListMap">
+		<result property="courseId" column="courseId"/>
+		<result property="collegeId" column="collegeId"/>
+		<result property="specialtyId" column="specialtyId"/>
+		<result property="teacherId" column="teacherId"/>
+		<result property="courseName" column="courseName"/>
+		<result property="description" column="description"/>
+		<result property="createTime" column="createTime"/>
+		<result property="coursePicFileId" column="coursePicFileId"/>
+		<result property="coursePicUrl" column="fileUrl"/>
+		<result property="commentAllowable" column="commentAllowable"/>
+		<result property="useCount" column="useCount"/>
+		<result property="avgScore" column="avgScore"/>
+		<result property="evaluateAmount" column="evaluateAmount"/>
+		<result property="status" column="status"/>
+		<result property="courseType" column="courseType"/>
+		<result property="courseTypeName" column="courseTypeName"/>
+		<result property="courseTypeLevel" column="courseTypeLevel"/>
+		<result property="openRange" column="openRange"/>
+		<result property="updateTime" column="updateTime"/>
+		<result property="courseStartUpType" column="courseStartUpType"/>
+		<result property="courseStratTime" column="courseStratTime"/>
+		<result property="realName" column="realName"/>
+		<result property="courseSum" column="courseSum"/>
+		<result property="people" column="people"/>
+	</resultMap>
+
+	<resultMap type="com.awslabplatform_admin.entity.ExperimentGroup" id="ExperimentGroupListMap">
+		<result property="groupId" column="groupId"/>
+		<result property="groupName" column="groupName"/>
+		<result property="createAuthorId" column="createAuthorId"/>
+		<result property="createDate" column="createDate"/>
+		<collection property="children" column="groupId" select="listUserByGroupId"/>
+	</resultMap>
+
+	<resultMap type="com.awslabplatform_admin.entity.User" id="UserMap">
+		<result property="userId" column="userId"/>
+		<result property="userName" column="userName"/>
+		<result property="userPwd" column="userPwd"/>
+		<result property="phoneNum" column="phoneNum"/>
+		<result property="email" column="email"/>
+		<result property="roleType" column="roleType"/>
+		<result property="createBy" column="createBy"/>
+		<result property="createTime" column="createTime"/>
+		<result property="updateBy" column="updateBy"/>
+		<result property="updateTime" column="updateTime"/>
+		<result property="userState" column="userState"/>
+	</resultMap>
+
+	<resultMap type="com.awslabplatform_admin.entity.Student" id="StudentMap">
+		<result property="id" column="id"/>
+		<result property="stuId" column="stuId"/>
+		<result property="realName" column="realName"/>
+		<result property="name" column="name"/>
+		<result property="schoolId" column="schoolId"/>
+		<result property="schoolName" column="schoolName"/>
+		<result property="mechanismId" column="mechanismId"/>
+		<result property="mechanismName" column="mechanismName"/>
+		<result property="major" column="major"/>
+		<result property="majorName" column="majorName"/>
+		<result property="grade" column="grade"/>
+		<result property="gradeName" column="gradeName"/>
+		<result property="classes" column="classes"/>
+		<result property="classesName" column="classesName"/>
+		<result property="phoneNum" column="phoneNum"/>
+		<result property="email" column="email"/>
+		<result property="birthday" column="birthday"/>
+		<result property="picFileId" column="picFileId"/>
+		<result property="address" column="address"/>
+		<result property="picFileUrl" column="picFileUrl"/>
+		<result property="runningExperiment" column="runningExperiment"/>
+	</resultMap>
+
+	<resultMap type="com.awslabplatform_admin.entity.Teacher" id="TeacherMap">
+		<result property="id" column="id"/>
+		<result property="realName" column="realName"/>
+		<result property="IAM" column="IAM"/>
+		<result property="mechanismId" column="mechanismId"/>
+		<result property="phoneNum" column="phoneNum"/>
+		<result property="email" column="email"/>
+		<result property="birthday" column="birthday"/>
+		<result property="address" column="address"/>
+	</resultMap>
+
+	<resultMap type="com.awslabplatform_admin.entity.CourseComment" id="CourseCommentMap">
+		<result property="commentId" column="commentId"/>
+		<result property="userId" column="userId"/>
+		<result property="courseId" column="courseId"/>
+		<result property="content" column="content"/>
+		<result property="commentTime" column="commentTime"/>
+		<result property="score" column="score"/>
+		<association property="student" column="userId" select="getCourseCommentStudentInfo"/>
+	</resultMap>
+
+	<resultMap type="com.awslabplatform_admin.entity.CourseCheckHistory" id="CourseCheckHistory">
+		<result property="id" column="id"/>
+		<result property="userId" column="userId"/>
+		<result property="courseId" column="courseId"/>
+		<result property="content" column="content"/>
+		<result property="checkStatus" column="checkStatus"/>
+		<result property="time" column="time"/>
+	</resultMap>
+
+	<resultMap type="com.awslabplatform_admin.entity.ExperimentGroup" id="ExperimentGroup">
+		<result property="groupId" column="groupId"/>
+		<result property="groupName" column="groupName"/>
+		<result property="name" column="name"/>
+		<result property="createAuthorId" column="createAuthorId"/>
+		<result property="createDate" column="createDate"/>
+		<result property="checked" column="checked"/>
+		<result property="userName" column="userName"/>
+	</resultMap>
+
+	<select id="findCourseByCourseId" resultMap="CourseListMap">
+		SELECT
+			courseId, collegeId, specialtyId, teacherId, courseName, description, createTime, coursePicFileId, f.fileUrl, commentAllowable, useCount, avgScore, evaluateAmount, status, courseType, courseTypeLevel, openRange, updateTime, courseStartUpType, DATE_FORMAT(courseStratTime, "%Y-%m-%d %H:%i:%s") AS courseStratTime
+		FROM
+			tb_course AS c
+		LEFT JOIN
+			tb_file_info AS f
+		ON
+			f.correlationId=c.courseId
+		WHERE
+			c.courseId = #{courseId} AND f.state = 1
+	</select>
+	<select id="findCourseByCourseName" parameterType="String" resultMap="CourseListMap">
+		SELECT
+			courseId,courseName,teacherId,description,createTime,coursePicFileId,commentAllowable,useCount,avgScore,evaluateAmount,status,courseType,courseTypeLevel,openRange,updateTime
+		FROM
+			tb_course AS c
+		WHERE
+			c.courseName = #{courseName}
+	</select>
+
+	<select id="findCourseByTeachName" resultMap="CourseListMap">
+		SELECT
+			courseId,courseName,teacherId,description,createTime,coursePicFileId,commentAllowable,useCount,avgScore,evaluateAmount,status,courseType,courseTypeLevel,openRange,updateTime
+		FROM
+			tb_course AS c
+		WHERE
+			c.teachName = #{teachName}
+	</select>
+
+	<sql id="courseInfoCondition">
+
+		<if test="condition.containsKey('courseIdOrName')">
+			AND courseName LIKE CONCAT('%','${condition.courseIdOrName}','%')
+		</if>
+
+		<if test="condition.containsKey('state')">
+			AND status = #{condition.state}
+		</if>
+
+		<if test="condition.containsKey('teacherId')">
+			AND teacherId = #{condition.teacherId}
+		</if>
+
+		<if test="condition.containsKey('checkState')">
+			<if test="condition.checkState == 1">
+				AND status = 3
+			</if>
+			<if test="condition.checkState == 2">
+				AND status IN (4,5,6) 
+			</if>
+		</if>
+		
+		<if test="condition.containsKey('collegeId')">
+			AND collegeId = #{condition.collegeId}
+		</if>
+		
+	</sql>
+
+	<!-- 分页查询课程信息 -->
+	<select id="listCourseInfo" parameterType="PageInfo" resultMap="CourseListMap">
+		SELECT
+			courseId,courseName,teacherId,description,createTime,coursePicFileId,commentAllowable,useCount,avgScore,evaluateAmount,status,courseType,s.itemName AS courseTypeName,courseTypeLevel,openRange,updateTime
+		FROM tb_course AS c
+		LEFT JOIN
+			tb_dic_item AS s
+		ON
+			s.itemId = c.courseType
+		<where>
+			1 = 1
+			<include refid="courseInfoCondition"/>
+			<!-- AND status != 0 已删除的状态不查找 -->
+		</where>
+		ORDER BY c.status DESC, createTime DESC
+		LIMIT #{from}, #{size}
+	</select>
+
+	<!--统计课程的梳理 -->
+	<select id="getCourseInfoTotal" parameterType="PageInfo" resultType="int">
+		SELECT COUNT(*)
+		FROM tb_course c
+		 <where>
+			1 = 1
+			<include refid="courseInfoCondition"/>
+			<!-- AND status != 0  已删除的状态不查找 -->
+		</where>
+	</select>
+
+	<update id="updateCourseInfo" parameterType="Course">
+		UPDATE tb_course
+		SET
+			collegeId = #{collegeId},
+			courseName = #{courseName},
+			specialtyId = #{specialtyId},
+			description = #{description},
+			status = #{status},
+			courseType = #{courseType},
+			courseTypeLevel = #{courseTypeLevel},
+			openRange = #{openRange},
+			courseStartUpType = #{courseStartUpType},
+			courseStratTime = #{courseStratTime},
+			updateTime = #{updateTime}
+		WHERE
+			courseId = #{courseId}
+	</update>
+
+	<insert id="addCourseInfo" parameterType="Course">
+       INSERT INTO tb_course(courseId,courseName,teacherId,collegeId,specialtyId,description,createTime,coursePicFileId,commentAllowable,useCount,avgScore,evaluateAmount,status,courseType,courseTypeLevel,openRange,updateTime,courseStartUpType,courseStratTime)
+       VALUES (
+           #{courseId},#{courseName},#{teacherId},#{collegeId},#{specialtyId},#{description},#{createTime},#{coursePicFileId},#{commentAllowable},#{useCount},#{avgScore},#{evaluateAmount},#{status},#{courseType},#{courseTypeLevel},#{openRange},#{updateTime},#{courseStartUpType},#{courseStratTime})
+	</insert>
+
+	<select id="findCourseExperimentGroupByCourseId" parameterType="java.lang.String" resultMap="ExperimentGroupListMap">
+		SELECT g.groupId,g.groupName,g.createAuthorId,g.createDate
+		FROM tb_course_experimentgroup AS c,tb_experiment_group AS g
+		WHERE
+			c.courseId = #{courseId}
+			and
+			c.groupId = g.groupId
+	</select>
+
+	<select id="listUserByGroupId" parameterType="java.lang.String" resultMap="UserMap">
+		SELECT
+			u.userId,u.userName,u.userPwd,u.phoneNum,u.email,u.roleType,u.createBy,u.createTime,u.updateBy,u.updateTime,u.userState
+		FROM
+			tb_experiment_group_user AS gu,tb_user AS u
+		FROM
+			gu.userId = u.userId and gu.groupId = #{groupId}
+	</select>
+
+
+	<delete id="deleteCourseById" parameterType="java.lang.String" >
+		UPDATE tb_course
+		SET
+			tb_course.status=0
+			<where>
+				tb_course.courseId=#{courseId}
+			</where>
+	</delete>
+
+	<select id="getCourseCheckHistory" parameterType="java.lang.String" resultMap="CourseCheckHistory">
+		SELECT
+			tb_course_checkhistory.courseId,tb_course_checkhistory.content, tb_course_checkhistory.checkStatus, tb_course_checkhistory.time, tb_course_checkhistory.userId, tb_user.realName AS userName
+		FROM
+			tb_course_checkhistory
+		LEFT JOIN
+			tb_user
+		ON
+			tb_user.userId = tb_course_checkhistory.userId
+		<where>
+			courseId = #{courseId}
+		</where>
+		ORDER BY time ASC  <!-- 按照评论时间升序 -->
+	</select>
+
+	<select id="getTeacherById" parameterType="java.lang.String" resultMap="TeacherMap">
+		SELECT
+			tb_user.realName, tb_user.phoneNum
+			FROM
+				tb_user
+				<where>
+					tb_user.userId=#{userId}
+				</where>
+	</select>
+
+	<select id="getCommentByCourseId" parameterType="java.lang.String" resultMap="CourseCommentMap">
+		SELECT
+			tb_course_comment.commentId, tb_course_comment.content, tb_course_comment.commentTime, tb_course_comment.score, tb_course_comment.userId
+			FROM
+			tb_course_comment
+			<where>
+				courseId=#{courseId}
+			</where>
+			ORDER BY tb_course_comment.commentTime DESC
+	</select>
+
+	<select id="getCourseCommentStudentInfo" parameterType="java.lang.String" resultMap="StudentMap">
+		SELECT
+			s.id,s.stuId,s.realName,s.mechanismId,s.major,s.grade,s.classes,s.phoneNum,s.email,s.birthday,s.picFileId,s.address,s.runningExperiment,f.fileUrl AS picFileUrl
+		FROM
+			tb_student AS s
+		LEFT JOIN
+			tb_file_info AS f
+		ON
+			f.fileId = s.picFileId
+		<where>
+			s.id=#{userId}
+		</where>
+	</select>
+
+	<select id="getGroupIdByCourseId" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			tb_course_experimentgroup.groupId
+		FROM
+			tb_course_experimentgroup
+			<where>
+				tb_course_experimentgroup.courseId=#{courseId}
+			</where>
+	</select>
+
+	<sql id="courseCommentInfoCondition">
+		<if test="condition.containsKey('courseId')">
+			AND courseId = #{condition.courseId}
+		</if>
+	</sql>
+
+	<select id="getCourseCommentInfo" parameterType="PageInfo" resultMap="CourseCommentMap">
+		SELECT
+			tb_course_comment.commentId, tb_course_comment.content, tb_course_comment.commentTime, tb_course_comment.score, tb_course_comment.userId
+			FROM
+			tb_course_comment
+			<where>
+				1 = 1
+				<include refid="courseCommentInfoCondition"/>
+			</where>
+			ORDER BY tb_course_comment.commentTime DESC
+			LIMIT #{from}, #{size}
+	</select>
+
+	<select id="getCourseCommentInfoTotal" parameterType="PageInfo" resultType="java.lang.Integer">
+		SELECT COUNT(*)
+		FROM
+			tb_course_comment
+			<where>
+				1 = 1
+				<include refid="courseCommentInfoCondition"/>
+			</where>
+	</select>
+
+	<insert id="insertCourseCheckHistory" parameterType="CourseCheckHistory">
+		INSERT INTO
+			tb_course_checkhistory
+			VALUES (#{id}, #{userId}, #{courseId}, #{content}, #{checkStatus}, #{time})
+	</insert>
+
+	<update id="updateCourseCheckHistory" parameterType="CourseCheckHistory">
+		UPDATE tb_course_checkhistory
+		SET tb_course_checkhistory.checkStatus=#{checkStatus}, tb_course_checkhistory.content=#{content}, tb_course_checkhistory.time=#{time}
+		<where>
+			tb_course_checkhistory.courseId=#{courseId}
+		</where>
+	</update>
+	
+	
+	<!-- 统计课程人数 参数是学院ID -->
+	<select id="countCourseNumberByCollegeId" parameterType="String" resultType="int">
+		SELECT COUNT(DISTINCT tb_student.stuId)
+		FROM
+			tb_student
+		WHERE	
+			tb_student.mechanismId = #{collegeId}
+	</select>
+	
+	<!-- 统计课程人数 参数是学校ID -->
+	<select id="countCourseNumberBySchoolId" parameterType="String" resultType="int">
+		SELECT COUNT(DISTINCT tb_student.stuId)
+		FROM
+			tb_student
+		WHERE
+			tb_student.schoolId = #{schoolId}
+	</select>
+	
+	<!-- 统计课程人数 参数是组list -->
+	<select id="countCourseNumberByGroup" parameterType="List" resultType="int">
+		SELECT 
+			COUNT(DISTINCT u.userId)
+		FROM
+			tb_experiment_group_user AS u,tb_experiment_group AS g
+		WHERE
+			g.groupId = u.groupId
+			AND
+			u.groupId IN
+			<foreach collection="list" item="groupId" open="(" separator="," close=")">
+				 #{groupId}
+			</foreach>
+	</select>
+	
+	<!-- 查询组list的所有学生 -->
+	<select id="selectCourseStudentByGroupIdList" parameterType="List" resultMap="StudentMap">
+		SELECT 
+			s.id,s.stuId,s.realName,s.schoolId,msh.mechanismName AS schoolName,s.mechanismId,mm.mechanismName AS mechanismName,s.major,ms.mechanismName AS majorName,s.grade,g.mechanismName AS gradeName,s.classes,c.mechanismName AS classesName,s.phoneNum,s.email,s.birthday,s.picFileId,f.fileUrl AS picFileUrl,s.address,s.runningExperiment
+		FROM
+			tb_experiment_group_user as gu,tb_student as s
+		LEFT JOIN 
+			tb_mechanism AS msh
+		ON
+			s.schoolId = msh.mechanismId 
+		LEFT JOIN 
+			tb_mechanism AS mm
+		ON
+			s.mechanismId = mm.mechanismId 
+		LEFT JOIN 
+			tb_mechanism AS ms
+		ON
+			s.major = ms.mechanismId 
+		LEFT JOIN 
+			tb_mechanism AS g
+		ON 
+			s.grade = g.mechanismId
+		LEFT JOIN 
+			tb_mechanism AS c
+		ON 
+			s.classes = c.mechanismName
+		LEFT JOIN
+			tb_file_info AS f
+		ON
+			s.picFileId = f.fileId  
+		WHERE
+			s.id = gu.userId
+			AND
+			gu.groupId IN
+			<foreach collection="list" item="groupId" open="(" separator="," close=")">
+				#{groupId}
+			</foreach>
+		GROUP BY s.stuId
+	</select>
+	
+	<!-- 查找学院的所有学生 -->
+	<select id="selectCourseStudentByCollegeId" parameterType="String" resultMap="StudentMap">
+		SELECT 
+			s.id,s.stuId,s.realName,s.schoolId,msh.mechanismName AS schoolName,s.mechanismId,mm.mechanismName AS mechanismName,s.major,ms.mechanismName AS majorName,s.grade,g.mechanismName AS gradeName,s.classes,c.mechanismName AS classesName,s.phoneNum,s.email,s.birthday,s.picFileId,f.fileUrl AS picFileUrl,s.address,s.runningExperiment
+		FROM
+			tb_student as s
+		LEFT JOIN 
+			tb_mechanism AS msh
+		ON
+			s.schoolId = msh.mechanismId 
+		LEFT JOIN 
+			tb_mechanism AS mm
+		ON
+			s.mechanismId = mm.mechanismId 
+		LEFT JOIN 
+			tb_mechanism AS ms
+		ON
+			s.major = ms.mechanismId 
+		LEFT JOIN 
+			tb_mechanism AS g
+		ON 
+			s.grade = g.mechanismId
+		LEFT JOIN 
+			tb_mechanism AS c
+		ON 
+			s.classes = c.mechanismName
+		LEFT JOIN
+			tb_file_info AS f
+		ON
+			s.picFileId = f.fileId  
+		WHERE
+			<!-- s.userState = 1
+			AND -->
+			s.mechanismId = #{collegeId}
+		GROUP BY s.stuId
+	</select>
+	
+	<!-- 查找学校的所有学生 -->
+	<select id="selectCourseStudentBySchoolId" parameterType="String" resultMap="StudentMap">
+		SELECT 
+			s.id,s.stuId,s.realName,s.schoolId,msh.mechanismName AS schoolName,s.mechanismId,mm.mechanismName AS mechanismName,s.major,ms.mechanismName AS majorName,s.grade,g.mechanismName AS gradeName,s.classes,c.mechanismName AS classesName,s.phoneNum,s.email,s.birthday,s.picFileId,f.fileUrl AS picFileUrl,s.address,s.runningExperiment
+		FROM
+			tb_student as s
+		LEFT JOIN 
+			tb_mechanism AS msh
+		ON
+			s.schoolId = msh.mechanismId 
+		LEFT JOIN 
+			tb_mechanism AS mm
+		ON
+			s.mechanismId = mm.mechanismId 
+		LEFT JOIN 
+			tb_mechanism AS ms
+		ON
+			s.major = ms.mechanismId 
+		LEFT JOIN 
+			tb_mechanism AS g
+		ON 
+			s.grade = g.mechanismId
+		LEFT JOIN 
+			tb_mechanism AS c
+		ON 
+			s.classes = c.mechanismName
+		LEFT JOIN
+			tb_file_info AS f
+		ON
+			s.picFileId = f.fileId 
+		WHERE
+			<!-- s.userState = 1
+			AND -->
+			s.schoolId = #{schoolId}
+		GROUP BY s.stuId
+	</select>
+	
+	 <!-- 查询当前登陆者老师已经发布和未发布的课程的数量 author:wy -->
+	<select id="countCourseYes" parameterType="PageInfo" resultType="java.lang.Integer">
+     select COUNT(*) from tb_course  where `status`in (${status}) AND teacherId=#{teacherId}
+	</select>
+
+     <!-- 查询当前登陆者老师的课程已学习总人数 author:wy -->
+	<select id="learning" parameterType="PageInfo" resultType="java.lang.Integer">
+    select COUNT(useCount) from tb_course WHERE teacherId=#{teacherId}
+	</select>
+	
+	<!-- 查询当前登陆者院系管理员 看到的本院系教师课程数量前十排行 author:wy -->
+	<select id="courseAmount" parameterType="PageInfo" resultMap="CourseListMap">
+	select b.realName as realName,COUNT(a.useCount)AS courseSum,SUM(a.useCount)as people from tb_course AS a 
+	LEFT OUTER JOIN tb_user as b on(b.userId=a.teacherId)
+	where b.departmentId=#{departmentId} and a.`status`!=#{status}
+	group by a.teacherId
+	ORDER BY courseSum desc limit 0,10
+	</select>
+
+    <!-- 查询当前登陆者院系管理员 看到的本院系已审核和未审核的课程 author:wy -->
+    <select id="auditCourse" parameterType="PageInfo" resultType="java.lang.Integer">
+    select COUNT(*) from tb_course as a
+	WHERE a.`status`in (${status}) AND a.collegeId =#{collegeId}
+    </select>
+</mapper>

@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform_admin.dao.courseManage.ExperimentDao">
+
+	<resultMap type="com.awslabplatform_admin.entity.Experiment" id="ExperimentMap">
+		<result property="experimentId" column="experimentId"/>
+		<result property="experimentNo" column="experimentNo"/>
+		<result property="experimentRegionId" column="region"/>
+		<result property="experimentRegionName" column="experimentRegionName"/>
+		<result property="templateId" column="templateId"/>
+		<result property="templetName" column="tmplName"/>
+		<result property="courseId" column="courseId"/>
+		<result property="experimentName" column="experimentName"/>
+		<result property="experimentDescription" column="description"/>
+		<result property="createTime" column="createTime"/>
+		<result property="guideName" column="fileName"/>
+		<result property="guideFileId" column="guideFileId"/>
+		<result property="guideUrl" column="guideUrl"/>
+		<result property="runtime" column="runtime"/>
+		<result property="exeperimentType" column="exeperimentType"/>
+		<result property="keyFile" column="keyFile"/>
+		<result property="keyName" column="keyName"/>
+		<result property="startTime" column="startTime"/>
+		<result property="endTime" column="endTime"/>
+		<result property="totalPrice" column="totalPrice"/>
+		<result property="stackId" column="stackId"/>
+		<result property="stackName" column="stackName"/>
+		<result property="stackState" column="stackState"/>
+		<result property="stackDeleteTime" column="stackDeleteTime"/>
+		<result property="useStartTime" column="useStartTime"/>
+		<result property="useEndTime" column="useEndTime"/>
+		<result property="templateOrigin" column="templateOrigin"/>
+		<result property="actualUseLength" column="actualUseLength"/>
+		<result property="policyId" column="policyId"/>
+		<result property="policyName" column="policyName"/>
+		<!-- <association property="templetName" column="{templateId=templateId,templateOrigin=templateOrigin}" select="getExperimentTemplateName"/> -->
+	</resultMap>
+
+
+	<resultMap type="com.awslabplatform_admin.entity.Report" id="CourseReportMap">
+		<result property="id" column="id"/>
+		<result property="experimentId" column="experimentId"/>
+		<result property="studentId" column="studentId"/>
+		<result property="experimentName" column="experimentName"/>
+		<result property="experimentNo" column="experimentNo"/>
+		<result property="content" column="content"/>
+		<result property="filedId" column="filedId"/>
+		<result property="createTime" column="createTime"/>
+		<result property="comment" column="comment"/>
+		<result property="score" column="score"/>
+		<result property="remarkTime" column="remarkTime"/>
+		<result property="runtime" column="runtime"/>
+
+	</resultMap>
+
+	<resultMap type="com.awslabplatform_admin.entity.AwsInstance" id="AwsInstanceMap">
+		<id property="id" column="id" />
+		<result property="instanceId" column="instanceId" />
+		<result property="correlationId" column="correlationId" />
+		<result property="keyName" column="keyName" />
+		<result property="publicIpAddress" column="publicIpAddress" />
+		<result property="privateIpAddress" column="privateIpAddress" />
+		<result property="instanceType" column="instanceType" />
+		<result property="instanceState" column="instanceState" />
+		<result property="keyPairUrl" column="keyPairUrl" />
+		<result property="useEndTime" column="useEndTime" />
+		<result property="instanceName" column="instanceName"/>
+	</resultMap>
+
+
+	<insert id="addMultiExperiment" parameterType="java.util.List">
+		INSERT INTO tb_experiment(experimentId,experimentNo,region,templateId,courseId,experimentName,description,createTime,guideFileId,runtime,exeperimentType,keyFile,startTime,endTime,templateOrigin,policyId)
+		VALUES
+		<foreach collection="list" item="experiment" separator="," >
+			(
+			#{experiment.experimentId},#{experiment.experimentNo},#{experiment.experimentRegionId},#{experiment.templateId},#{experiment.courseId},#{experiment.experimentName},#{experiment.experimentDescription},#{experiment.createTime},
+			<if test="experiment.guideInfo != null">
+				#{experiment.guideInfo.fileId},
+			</if>
+			<if test="experiment.guideInfo == null">
+				"",
+			</if>
+			#{experiment.runtime},#{experiment.exeperimentType},
+			<if test="experiment.keyFile != null">
+				#{experiment.keyFile},
+			</if>
+			<if test="experiment.keyFile == null">
+				"",
+			</if>
+			
+			<if test="experiment.startTime != null">
+				#{experiment.startTime},
+			</if>
+			<if test="experiment.startTime == null">
+				"",
+			</if>
+			<if test="experiment.endTime != null">
+				#{experiment.endTime},
+			</if>
+			<if test="experiment.endTime == null">
+				"",
+			</if>
+			<if test="experiment.templateOrigin != null">
+				#{experiment.templateOrigin},
+			</if>
+			<if test="experiment.templateOrigin == null">
+				0,
+			</if>
+			<if test="experiment.policyId != null">
+				#{experiment.policyId}
+			</if>
+			<if test="experiment.policyId == null">
+				0
+			</if>
+			)
+		</foreach>
+
+    </insert>
+
+	<update id="updateExperiment" parameterType="Experiment">
+        UPDATE tb_experiment
+        <set>
+			<if test="experimentNo != null">
+				experimentNo = #{experimentNo},
+			</if>
+			<if test="templateId != null">
+				templateId = #{templateId},
+			</if>
+			<if test="experimentName != null">
+				experimentName = #{experimentName},
+			</if>
+			<if test="experimentDescription != null">
+				description = #{experimentDescription},
+			</if>
+			<if test="createTime != null">
+				createTime = #{createTime},
+			</if>
+			<if test="runtime != null">
+				runtime = #{runtime},
+			</if>
+			<if test="exeperimentType != null">
+				exeperimentType = #{exeperimentType},
+			</if>
+			<if test="keyFile != null">
+				keyFile = #{keyFile},
+			</if>
+			<if test="startTime != null">
+				startTime = #{startTime},
+			</if>
+			<if test="endTime != null">
+				endTime = #{endTime},
+			</if>
+			<if test="templateOrigin != null">
+				templateOrigin = #{templateOrigin}
+			</if>
+			<if test="policyId != null">
+				templateOrigin = #{policyId}
+			</if>
+		</set>
+		<where>
+			experimentId = #{experimentId}
+		</where>
+    </update>
+
+	<update id="updateMultiExperiment" parameterType="java.util.List">
+		UPDATE tb_experiment
+		<trim prefix="SET" suffixOverrides=",">
+			<!-- 更新experimentNo -->
+			<trim prefix="experimentNo = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					<if test="item.experimentNo != null">
+						WHEN experimentId = #{item.experimentId} THEN #{item.experimentNo}
+					</if>
+				</foreach>
+			</trim>
+			<!-- 更新region -->
+			<trim prefix="region = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					<if test="item.experimentRegionId != null">
+						WHEN experimentId = #{item.experimentId} THEN #{item.experimentRegionId}
+					</if>
+				</foreach>
+			</trim>
+			<!-- 更新templateId -->
+			<trim prefix="templateId = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					<if test="item.templateId != null">
+						WHEN experimentId = #{item.experimentId} THEN #{item.templateId}
+					</if>
+				</foreach>
+			</trim>
+			<!-- 更新experimentName -->
+			<trim prefix="experimentName = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					<if test="item.experimentName != null">
+						WHEN experimentId = #{item.experimentId} THEN #{item.experimentName}
+					</if>
+				</foreach>
+			</trim>
+			<!-- 更新description -->
+			<trim prefix="description = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					<if test="item.experimentDescription != null">
+						WHEN experimentId = #{item.experimentId} THEN #{item.experimentDescription}
+					</if>
+				</foreach>
+			</trim>
+			<!-- 更新createTime -->
+			<trim prefix="createTime = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					<if test="item.createTime != null">
+						WHEN experimentId = #{item.experimentId} THEN #{item.createTime}
+					</if>
+				</foreach>
+			</trim>
+			<!-- 更新runtime -->
+			<trim prefix="runtime = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					<if test="item.runtime != null">
+						WHEN experimentId = #{item.experimentId} THEN #{item.runtime}
+					</if>
+				</foreach>
+			</trim>
+			<!-- 更新exeperimentType -->
+			<trim prefix="exeperimentType = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					<if test="item.exeperimentType != null">
+						WHEN experimentId = #{item.experimentId} THEN #{item.exeperimentType}
+					</if>
+				</foreach>
+			</trim>
+			<!-- 更新keyFile -->
+			<trim prefix="keyFile = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					<if test="item.keyFile != null">
+						WHEN experimentId = #{item.experimentId} THEN #{item.keyFile}
+					</if>
+				</foreach>
+			</trim>
+			<!-- 更新startTime -->
+			<trim prefix="startTime = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					<if test="item.startTime != null">
+						WHEN experimentId = #{item.experimentId} THEN #{item.startTime}
+					</if>
+				</foreach>
+			</trim>
+			<!-- 更新endTime -->
+			<trim prefix="endTime = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					<if test="item.endTime != null">
+						WHEN experimentId = #{item.experimentId} THEN #{item.endTime}
+					</if>
+				</foreach>
+			</trim>
+			<!-- 更新templateOrigin -->
+			<trim prefix="templateOrigin = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					<if test="item.templateOrigin != null">
+						WHEN experimentId = #{item.experimentId} THEN #{item.templateOrigin}
+					</if>
+				</foreach>
+			</trim>
+			<!-- 更新policyId -->
+			<trim prefix="policyId = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					<if test="item.policyId != null">
+						WHEN experimentId = #{item.experimentId} THEN #{item.policyId}
+					</if>
+				</foreach>
+			</trim>
+		</trim>
+		<where>
+			experimentId IN
+			<foreach collection="list" item="item" open="(" close=")" separator=",">
+				#{item.experimentId}
+			</foreach>
+		</where>
+	</update>
+
+    <sql id="courseExperimentInfoCondition">
+		<if test="condition.containsKey('courseId')">
+			AND courseId = #{condition.courseId}
+		</if>
+	</sql>
+
+    <!-- 分页查询课程实验信息 -->
+	<select id="listCourseExperimentInfo" parameterType="PageInfo" resultMap="ExperimentMap">
+		SELECT
+			tb_experiment.experimentId,
+			tb_experiment.experimentNo,
+			tb_experiment.templateId,
+			tb_experiment.region,
+			if(tb_experiment.region='cn-north-1','北京区','宁夏区') as experimentRegionName,
+			templ.tmplName,
+			tb_experiment.courseId,
+			tb_experiment.experimentName,
+			tb_experiment.description,
+			tb_experiment.createTime,
+			guide.fileUrl AS guideFileId,
+			guide.fileName AS fileName,
+			tb_experiment.runtime,
+			tb_experiment.exeperimentType,
+			keypair.fileName AS keyName,
+			keypair.fileId AS keyFile,
+			DATE_FORMAT(tb_experiment.startTime, "%Y-%m-%d %H:%i:%s") AS startTime, 
+			DATE_FORMAT(tb_experiment.endTime, "%Y-%m-%d %H:%i:%s") AS endTime,
+			tb_experiment.templateOrigin,
+			tb_experiment.policyId,
+			ply.name AS policyName
+		FROM
+			tb_experiment
+		LEFT JOIN
+			tb_file_info keypair
+		ON
+			tb_experiment.keyFile=keypair.fileId
+		LEFT JOIN
+			tb_file_info guide
+		ON
+			tb_experiment.guideFileId=guide.fileId
+		LEFT JOIN
+			tb_template templ
+		ON
+			templ.tmplId = tb_experiment.templateId
+		LEFT JOIN
+			tb_policy ply
+		ON
+			ply.id = tb_experiment.policyId
+		<where>
+			1 = 1
+			<include refid="courseExperimentInfoCondition"/>
+		</where>
+		ORDER BY
+			tb_experiment.experimentNo ASC
+		LIMIT #{from}, #{size}
+	</select>
+
+	<select id="getExperimentTemplateName" parameterType="Map" resultType="String">
+		SELECT tmplName FROM 
+		<if test="templateOrigin == 0">
+			tb_template
+		</if>
+		<if test="templateOrigin != 0">
+			tb_template_teacher
+		</if>
+		 WHERE tmplId = #{templateId}
+	</select>
+
+	<!--统计课程实验的数量-->
+	<select id="getCourseExperimentInfoTotal" parameterType="PageInfo" resultType="int">
+		select count(*)
+		from tb_experiment as e
+		<where>
+			1 = 1
+			<include refid="courseExperimentInfoCondition"/>
+		</where>
+	</select>
+
+	<select id="getExperimentByCourseId" parameterType="java.lang.String" resultMap="ExperimentMap">
+		SELECT
+			e.experimentId, e.experimentNo, e.region, if(e.region='cn-north-1','北京区','宁夏区') as experimentRegionName, e.templateId, t.tmplName AS tmplName, e.courseId, e.experimentName, e.description, e.createTime, e.guideFileId, fg.fileUrl AS guideUrl, e.runtime, e.exeperimentType, e.keyFile,f.fileName AS keyName, e.instanceType, DATE_FORMAT(e.startTime, "%Y-%m-%d %H:%i:%s") AS startTime, DATE_FORMAT(e.endTime, "%Y-%m-%d %H:%i:%s") AS endTime, e.templateOrigin, e.policyId, ply.name AS policyName                   
+		FROM
+			tb_experiment AS e
+		LEFT JOIN 
+			tb_template as t
+		ON
+			e.templateId = t.tmplId
+		LEFT JOIN
+			tb_file_info AS f
+		ON
+			e.keyFile = f.fileId
+		LEFT JOIN
+			tb_file_info AS fg
+		ON
+			fg.fileId = e.guideFileId
+		LEFT JOIN
+			tb_policy ply
+		ON
+			ply.id = e.policyId
+		<where>
+			courseId = #{courseId}
+		</where>
+		ORDER BY
+			e.experimentNo ASC
+	</select>
+
+	<delete id="deleteMultiExperimentByExperimentId" parameterType="String">
+		DELETE
+		FROM
+			tb_experiment
+		WHERE experimentId IN
+			<foreach item="experimentId" collection="array" open="(" separator="," close=")" >
+           		#{experimentId}
+    		</foreach>
+	</delete>
+
+	<delete id="deleteExperimentByExperimentId" parameterType="java.lang.String">
+		DELETE
+		FROM
+			tb_experiment
+			<where>
+				experimentId=#{experimentId}
+			</where>
+	</delete>
+
+	<select id="getCourseReportByStudentId" resultMap="CourseReportMap">
+		SELECT
+			r.id, r.experimentId, r.studentId, e.experimentName, r.content, r.filedId, r.createTime, r.comment, r.score, r.remarkTime,e.experimentNo AS experimentNo, e.runtime AS runtime, DATE_FORMAT(e.startTime, "%Y-%m-%d %H:%i:%s") AS startTime, DATE_FORMAT(e.endTime, "%Y-%m-%d %H:%i:%s") AS endTime
+		FROM
+			tb_report as r
+		LEFT JOIN
+			tb_experiment as e
+		ON
+			e.experimentId =  r.experimentId
+		<where>
+			r.studentId = #{studentId}
+			AND
+			e.courseId = #{courseId}
+		</where>
+		ORDER BY e.experimentNo ASC
+	</select>
+
+	<insert id="addExperimentGroupUser">
+		INSERT INTO tb_experiment_group_user
+		VALUES (tb_experiment_group_user.groupId = #{groupId}, tb_experiment_group_user.userId=#{userId})
+	</insert>
+
+	<select id="getCourseReportByStudentIdAndExperimentId" resultMap="CourseReportMap">
+		SELECT
+			id, experimentId, studentId, experimentName, content, filedId, createTime, comment, score, remarkTime
+		FROM
+			tb_report
+			<where>
+				tb_report.experimentId=#{experimentId}
+				AND
+				tb_report.studentId=#{studentId}
+			</where>
+	</select>
+
+	<update id="uodateCourseReport" parameterType="Report">
+		UPDATE tb_report
+		SET
+			tb_report.comment=#{comment}, tb_report.score=#{score}, tb_report.remarkTime = #{remarkTime}
+		<where>
+			tb_report.experimentId = #{experimentId} AND tb_report.studentId = #{studentId}
+		</where>	
+	</update>
+	
+
+	<select id="getExperimentInfo" parameterType="String" resultMap="ExperimentMap">
+		SELECT
+			e.experimentId, e.experimentNo,  e.region, if(e.region='cn-north-1','北京区','宁夏区') as experimentRegionName, e.templateId, t.tmplName AS tmplName, e.courseId, e.experimentName, e.description, e.createTime, e.guideFileId, fg.fileUrl AS guideUrl, e.runtime, e.exeperimentType, e.keyFile,f.fileName AS keyName, e.instanceType, DATE_FORMAT(e.startTime, "%Y-%m-%d %H:%i:%s") AS startTime, DATE_FORMAT(e.endTime, "%Y-%m-%d %H:%i:%s") AS endTime, e.totalPrice, e.stackId, e.stackName, e.stackState, e.stackDeleteTime, e.useStartTime, e.useEndTime, e.actualUseLength, e.templateOrigin, e.policyId, ply.name AS policyName
+		FROM
+			tb_experiment AS e
+		LEFT JOIN 
+			tb_template as t
+		ON
+			e.templateId = t.tmplId
+		LEFT JOIN
+			tb_file_info AS f
+		ON
+			e.keyFile = f.fileId
+		LEFT JOIN
+			tb_file_info AS fg
+		ON
+			fg.fileId = e.guideFileId
+		LEFT JOIN
+			tb_policy ply
+		ON
+			ply.id = e.policyId
+		<where>
+			e.experimentId = #{experimentId}
+		</where>
+	</select>
+	
+	<update id="updateExperimentResourceInfo" parameterType="Experiment">
+		UPDATE tb_experiment
+		<trim prefix="set" suffixOverrides=",">
+			<if test="totalPrice != null">
+				totalPrice = #{totalPrice},
+			</if>
+			<if test="stackId != null and stackId !=''">
+				stackId = #{stackId},
+			</if>
+			<if test="stackName != null and stackName !=''">
+				stackName = #{stackName},
+			</if>
+			<if test="stackState != null and stackState !='' ">
+				stackState = #{stackState},
+			</if>
+			<if test="stackDeleteTime != null and stackDeleteTime != ''">
+				stackDeleteTime = #{stackDeleteTime},
+			</if>
+			<if test="useStartTime != null and useStartTime !='' ">
+				useStartTime = #{useStartTime},
+			</if>
+			<if test="useEndTime != null and useEndTime != ''">
+				useEndTime = #{useEndTime},
+			</if>
+			<if test="actualUseLength != null">
+				actualUseLength = #{actualUseLength},
+			</if>
+			
+		</trim>
+		<where>
+			experimentId = #{experimentId}
+		</where>
+	</update>
+	
+	
+	<!-- 获取模板实例数据 -->
+	<select id="listExperimentInstance" parameterType="String" resultMap="AwsInstanceMap">
+		SELECT
+			tb_template_instance.id AS id,
+			tb_template_instance.instanceId AS instanceId,
+			tb_template_instance.correlationId AS correlationId,
+			tb_template_instance.keyName AS keyName,
+			tb_template_instance.publicIpAddress AS publicIpAddress,
+			tb_template_instance.privateIpAddress AS privateIpAddress,
+			tb_template_instance.instanceType AS instanceType,
+			tb_template_instance.instanceState AS instanceState,
+			tb_template_instance.instanceName AS instanceName,
+			tb_file_info.fileUrl AS keyPairUrl,
+			DATE_FORMAT(tb_experiment.useEndTime, "%Y-%m-%d %H:%i:%s") AS useEndTime
+		FROM
+			(tb_template_instance, tb_experiment)
+		LEFT JOIN
+			tb_file_info
+		ON 
+			tb_file_info.correlationId = tb_template_instance.keyName
+		<where>
+			tb_experiment.experimentId = #{experimentId}
+			AND
+			tb_experiment.stackState = "CREATE_COMPLETE"
+			AND
+			tb_template_instance.correlationId = tb_experiment.stackName
+		</where>
+	</select>
+	<select id="getExperimentRegion" parameterType="string" resultType="string">
+		SELECT tb_experiment.region FROM tb_experiment
+		WHERE experimentId = #{experimentId}
+	</select>
+</mapper>

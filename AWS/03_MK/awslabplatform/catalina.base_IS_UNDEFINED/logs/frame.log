@@ -1,0 +1,90 @@
+2018-03-18 11:22:29 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 11:22:30 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 11:22:30 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-18 11:25:23 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 11:25:24 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 11:26:55 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 11:26:55 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 11:26:55 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-18 11:28:10 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 11:28:11 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 11:28:11 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-18 11:29:32 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 11:29:32 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 11:29:32 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-18 11:36:15 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 11:36:15 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 11:36:15 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-18 11:41:11 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 11:41:12 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 11:41:12 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-18 11:41:57 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 11:41:57 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 11:41:57 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-18 12:01:52 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 12:01:52 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 12:01:52 org.apache.ibatis.session.AutoMappingUnknownColumnBehavior-47[main]
+WARN: Unknown column is detected on 'com.awslabplatform.dao.courseManage.CourseDao.listByCondition' auto-mapping. Mapping parameters are [columnName=theacherId,propertyName=theacherId,propertyType=null]
+2018-03-18 12:01:52 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-18 12:02:55 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-18 12:02:55 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-18 12:02:55 org.apache.ibatis.session.AutoMappingUnknownColumnBehavior-47[main]
+WARN: Unknown column is detected on 'com.awslabplatform.dao.courseManage.CourseDao.listByCondition' auto-mapping. Mapping parameters are [columnName=theacherId,propertyName=theacherId,propertyType=null]
+2018-03-18 12:02:55 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 2
+2018-03-19 14:47:57 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course 
+2018-03-19 14:47:57 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: ==> Parameters: 
+2018-03-19 14:47:57 org.apache.ibatis.session.AutoMappingUnknownColumnBehavior-47[main]
+WARN: Unknown column is detected on 'com.awslabplatform.dao.courseManage.CourseDao.listByCondition' auto-mapping. Mapping parameters are [columnName=theacherId,propertyName=theacherId,propertyType=null]
+2018-03-19 14:47:57 com.awslabplatform.dao.courseManage.CourseDao.listByCondition-159[main]
+DEBUG: <==      Total: 6
+2018-03-19 14:49:54 com.awslabplatform.dao.courseManage.CourseDao.selectByPrimaryKey-159[main]
+DEBUG: ==>  Preparing: SELECT * FROM tb_course WHERE courseId=? 
+2018-03-19 14:49:54 com.awslabplatform.dao.courseManage.CourseDao.selectByPrimaryKey-159[main]
+DEBUG: ==> Parameters: courseId05(String)
+2018-03-19 14:49:54 org.apache.ibatis.session.AutoMappingUnknownColumnBehavior-47[main]
+WARN: Unknown column is detected on 'com.awslabplatform.dao.courseManage.CourseDao.selectByPrimaryKey' auto-mapping. Mapping parameters are [columnName=theacherId,propertyName=theacherId,propertyType=null]
+2018-03-19 14:49:54 com.awslabplatform.dao.courseManage.CourseDao.selectByPrimaryKey-159[main]
+DEBUG: <==      Total: 1
+2018-03-22 19:02:51 org.springframework.context.support.ClassPathXmlApplicationContext-549[main]
+WARN: Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanDefinitionStoreException: Invalid bean definition with name 'dataSource' defined in class path resource [spring/spring-mybatis.xml]: Could not resolve placeholder 'jdbc.url' in string value "${jdbc.url}"; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'jdbc.url' in string value "${jdbc.url}"
+2018-03-22 19:03:33 org.springframework.context.support.ClassPathXmlApplicationContext-549[main]
+WARN: Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanDefinitionStoreException: Invalid bean definition with name 'dataSource' defined in class path resource [spring/spring-mybatis.xml]: Could not resolve placeholder 'jdbc.url' in string value "${jdbc.url}"; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'jdbc.url' in string value "${jdbc.url}"
+2018-03-22 19:56:02 org.springframework.context.support.ClassPathXmlApplicationContext-549[main]
+WARN: Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanDefinitionStoreException: Invalid bean definition with name 'dataSource' defined in class path resource [spring/spring-mybatis.xml]: Could not resolve placeholder 'jdbc.url' in string value "${jdbc.url}"; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'jdbc.url' in string value "${jdbc.url}"
+2018-03-23 08:55:06 org.springframework.context.support.ClassPathXmlApplicationContext-549[main]
+WARN: Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanDefinitionStoreException: Invalid bean definition with name 'dataSource' defined in class path resource [spring/spring-mybatis.xml]: Could not resolve placeholder 'jdbc.url' in string value "${jdbc.url}"; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'jdbc.url' in string value "${jdbc.url}"
+2018-03-23 08:57:41 org.springframework.context.support.ClassPathXmlApplicationContext-549[main]
+WARN: Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanDefinitionStoreException: Invalid bean definition with name 'dataSource' defined in class path resource [spring/spring-mybatis.xml]: Could not resolve placeholder 'jdbc.url' in string value "${jdbc.url}"; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'jdbc.url' in string value "${jdbc.url}"
+2018-03-23 21:12:01 org.springframework.context.support.ClassPathXmlApplicationContext-549[main]
+WARN: Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanDefinitionStoreException: Invalid bean definition with name 'dataSource' defined in class path resource [spring/spring-mybatis.xml]: Could not resolve placeholder 'jdbc.url' in string value "${jdbc.url}"; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'jdbc.url' in string value "${jdbc.url}"

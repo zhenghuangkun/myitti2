@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform_admin.dao.common.FileInfoDao">
+
+	<resultMap type="com.awslabplatform_admin.entity.FileInfo" id="FileMap">
+		<result property="fileId" column="fileId"/>
+		<result property="correlationId" column="correlationId"/>
+		<result property="fileUrl" column="fileUrl"/>
+		<result property="fileName" column="fileName"/>
+		<result property="fileType" column="fileType"/>
+		<result property="fileSize" column="fileSize"/>
+		<result property="imgWidth" column="imgWidth"/>
+		<result property="imgHight" column="imgHight"/>
+		<result property="distinguishFlag" column="distinguishFlag"/>
+		<result property="operator" column="operator"/>
+		<result property="optTime" column="optTime"/>
+		<result property="state" column="state"/>
+	</resultMap>
+	<!-- 插入单个文件信息 -->
+	<insert id="insert" parameterType="FileInfo">
+       INSERT INTO tb_file_info(
+       		fileId, correlationId, fileUrl, fileName, fileType, fileSize, imgWidth, imgHight, distinguishFlag,
+		       	operator, optTime, state)
+       VALUES (#{fileId}, #{correlationId}, #{fileUrl}, #{fileName}, #{fileType}, #{fileSize}, #{imgWidth}, #{imgHight}, #{distinguishFlag},
+           #{operator}, #{optTime}, #{state})
+	</insert>
+
+	<!-- 插入多个文件信息 -->
+	<insert id="insertList" parameterType="List">
+    	INSERT INTO
+   	 		tb_file_info (fileId, correlationId, fileUrl, fileName, fileType, fileSize, imgWidth, imgHight, distinguishFlag,
+   	 		operator, optTime, state)
+    	VALUES
+    	<foreach collection="list" item="file" index="index" separator="," >
+           (#{file.fileId}, #{file.correlationId}, #{file.fileUrl}, #{file.fileName}, #{file.fileType}, #{file.fileSize}, #{file.imgWidth}, #{file.imgHight},
+           		#{file.distinguishFlag}, #{file.operator}, #{file.optTime}, #{file.state})
+    	</foreach>
+	</insert>
+
+	<!-- 更新单个文件信息 -->
+	<update id="updateFileInfo" parameterType="FileInfo">
+       		UPDATE tb_file_info
+		<set>
+			<if test="fileUrl != null and fileUrl!=''">
+				fileUrl = #{fileUrl},
+			</if>
+			<if test="fileName != null and fileName!=''">
+				fileName = #{fileName},
+			</if>
+			<if test="fileType != null and fileType!=''">
+				fileType = #{fileType},
+			</if>
+			<if test="fileSize != null">
+				fileSize = #{fileSize},
+			</if>
+			<if test="imgWidth != null">
+				imgWidth = #{imgWidth},
+			</if>
+			<if test="imgHight != null">
+				imgHight = #{imgHight},
+			</if>
+			<if test="operator != null and operator!=''">
+				operator = #{operator},
+			</if>
+			<if test="optTime != null and optTime!=''">
+				optTime = #{optTime},
+			</if>
+			<if test="state != null">
+				state = #{state}
+			</if>
+		</set>
+		<where>
+			correlationId = #{correlationId}
+			<if test="distinguishFlag != null and distinguishFlag!=''">
+				AND distinguishFlag = #{distinguishFlag}
+			</if>
+		</where>
+	</update>
+
+	<!-- 更新多个文件信息 -->
+	<update id="updateListFileInfo" parameterType="java.util.List">
+	   UPDATE tb_file_info
+        <trim prefix="set" suffixOverrides=",">
+       		<trim prefix="fileUrl = case" suffix="end,">
+        	 <foreach collection="list" item="item">
+               	 <if test="item !=null">
+                     <if test="item.fileUrl !=null and item.fileUrl != ''">
+                         when 
+                         	correlationId = #{item.correlationId} 
+                         then #{item.fileUrl}
+                     </if>
+                 </if>
+              </foreach>
+            </trim>
+            <trim prefix="fileName = case" suffix="end,">
+                 <foreach collection="list" item="item">
+                 	<if test="item !=null">
+	                     <if test="item.fileName !=null and item.fileName != ''">
+	                         when 
+	                         	correlationId = #{item.correlationId} 
+	                         then #{item.fileName}
+	                     </if>
+                     </if>
+                 </foreach>
+            </trim>
+            <trim prefix="fileType = case" suffix="end,">
+                 <foreach collection="list" item="item">
+                 	<if test="item !=null">
+	                     <if test="item.fileType !=null and item.fileType != ''">
+	                         when 
+	                         	correlationId = #{item.correlationId} 
+	                         then #{item.fileType}
+	                     </if>
+                     </if>
+                 </foreach>
+            </trim>
+            <trim prefix="fileSize = case" suffix="end,">
+                 <foreach collection="list" item="item">
+                 	<if test="item !=null">
+	                     <if test="item.fileSize !=null and item.fileSize != ''">
+	                         when 
+	                         	correlationId = #{item.correlationId} 
+	                         then #{item.fileSize}
+	                     </if>
+                     </if>
+                 </foreach>
+            </trim>
+            <trim prefix="imgWidth = case" suffix="end,">
+                 <foreach collection="list" item="item">
+                 	<if test="item !=null">
+	                     <if test="item.imgWidth !=null and item.imgWidth != ''">
+	                         when 
+	                         	correlationId = #{item.correlationId} 
+	                         then #{item.imgWidth}
+	                     </if>
+                     </if>
+                 </foreach>
+            </trim>
+            <trim prefix="imgHight = case" suffix="end,">
+                 <foreach collection="list" item="item">
+                 	<if test="item !=null">
+	                     <if test="item.imgHight !=null and item.imgHight != ''">
+	                         when 
+	                         	correlationId = #{item.correlationId} 
+	                         then #{item.imgHight}
+	                     </if>
+                     </if>
+                 </foreach>
+            </trim>
+            <trim prefix="operator = case" suffix="end,">
+                 <foreach collection="list" item="item">
+                 	<if test="item !=null">
+	                     <if test="item.operator !=null and item.operator != ''">
+	                         when 
+	                         	correlationId = #{item.correlationId} 
+	                         then #{item.operator}
+	                     </if>
+                     </if>
+                 </foreach>
+            </trim>
+            <trim prefix="optTime = case" suffix="end,">
+                 <foreach collection="list" item="item">
+                 	<if test="item !=null">
+	                     <if test="item.optTime !=null and item.optTime != ''">
+	                         when 
+	                         	correlationId = #{item.correlationId} 
+	                         then #{item.optTime}
+	                     </if>
+                     </if>
+                 </foreach>
+            </trim>
+            <trim prefix="state = case" suffix="end,">
+                 <foreach collection="list" item="item">
+                 	<if test="item !=null">
+	                     <if test="item.state !=null and item.state != ''">
+	                         when 
+	                         	correlationId = #{item.correlationId} 
+	                         then #{item.state}
+	                     </if>
+                     </if>
+                 </foreach>
+            </trim>
+        </trim>
+        <where>  
+	        <foreach collection="list" separator="or" item="item">
+	        	<if test="item !=null">  
+	            	(correlationId = #{item.correlationId}
+	            	<if test="item.distinguishFlag != null and item.distinguishFlag!=''">
+						AND distinguishFlag = #{item.distinguishFlag}
+					</if>)
+	            </if>
+	        </foreach>  
+	    </where>
+    </update>
+
+	<select id="getFileInfoById" parameterType="java.lang.String" resultMap="FileMap">
+		SELECT
+			fileId, correlationId, fileUrl, fileName, fileType, fileSize, imgWidth, imgHight, distinguishFlag, operator, optTime, state
+			FROM tb_file_info
+			<where>
+				fileId = #{fileId}
+			</where>
+	</select>
+
+	<delete id="deleteMultiByCorrelationId" parameterType="String">
+		DELETE
+		FROM
+			tb_file_info
+		WHERE correlationId IN
+			<foreach item="correlationId" collection="array" open="(" separator="," close=")" >
+           		#{correlationId}
+    		</foreach>
+	</delete>
+
+	<delete id="deleteMultiByFileId" parameterType="java.lang.String">
+		DELETE
+		FROM
+			tb_file_info
+			<where>
+				fileId=#{fileId}
+			</where>
+	</delete>
+
+	<select id="getKeyByFileInfoType" parameterType="java.lang.String" resultMap="FileMap">
+		SELECT
+			tb_file_info.fileName, tb_file_info.fileId
+			FROM
+			tb_file_info
+			<where>
+				fileType='pem'
+			</where>
+	</select>
+
+	<select id="selectKeyPairByName" parameterType="String" resultType="int">
+		SELECT 
+			COUNT(*)
+		FROM
+			tb_file_info
+		<where>
+			fileType='pem' AND fileName=#{keyName}
+		</where>
+	</select>
+</mapper>

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform_admin.dao.resourceReview.TmplReleaseDao">
+
+	<resultMap id="tmplReleaseMap" type="Template">
+		<id property="tmplId" column="tmplId" />
+		<result property="tmplName" column="tmplName" />
+		<result property="tmplType" column="tmplType" />
+		<result property="tmplPrice" column="tmplPrice" />
+		<result property="releaser" column="releaser" />
+		<result property="releaseReviewTime" column="releaseReviewTime" />
+		<result property="releaseRange" column="releaseRange" />
+		<result property="releaseReviewState" column="releaseReviewState"/>
+		<association select="getTmplFile" property="tmplScript"
+			column="{correlationId=tmplId, distinguishFlag=script}" javaType="FileInfo">
+			<id property="fileId" column="fileId" />
+			<result property="correlationId" column="correlationId" />
+			<result property="fileUrl" column="fileUrl" />
+			<result property="fileName" column="fileName" />
+			<result property="fileType" column="fileType" />
+			<result property="fileSize" column="fileSize" />
+		</association>
+	</resultMap>
+
+	<!-- 插入模板发布审核记录 -->
+	<insert id="addTmplReleaseRecord" parameterType="TmplReleaseRecord">
+		INSERT INTO tb_template_release_record(
+			recordId, tmplId, operation, remark, releaseRange, releaseDept, operator, optTime)
+		VALUES (
+			#{recordId}, #{tmplId}, #{operation}, #{remark}, #{releaseRange}, #{releaseDept}, #{operator},  #{optTime})
+	</insert>
+
+
+	<!-- 获取模板发布申请审核记录 -->
+	<select id="listReleaseRecordInfo" parameterType="String" resultType="TmplReleaseRecord">
+		SELECT
+			recordId,
+			tmplId,
+			operation,
+			releaseRange,
+			tb_mechanism.mechanismName as releaseDept,
+			remark,
+			tb_user.realName AS operator,
+			optTime
+		FROM
+			tb_template_release_record
+		LEFT JOIN 
+			tb_mechanism
+		ON(tb_template_release_record.releaseDept = tb_mechanism.mechanismId),
+		tb_user
+		<where>
+			1=1 AND tb_user.userId = tb_template_release_record.operator
+			<if test="_parameter != '' and _parameter != null">
+				AND tb_template_release_record.tmplId = #{_parameter}
+			</if>
+			ORDER BY optTime DESC
+		</where>
+	</select>
+	
+	<!-- 查询模板发布列表条件 -->
+	<sql id="tmplReleaseTbCondition">
+		1=1  AND (tb_user.userId = tb_template.releaser OR tb_user.userId = tb_template.releaseDept)
+		<if test="condition.keyword != '' and condition.keyword != null">
+			AND tb_template.tmplName like concat('%',#{condition.keyword},'%')
+		</if>
+		<choose>  
+            <when test="condition.releaseReviewState != 0 and condition.releaseReviewState != null">  
+                AND tb_template.releaseReviewState = #{condition.releaseReviewState}  
+            </when>  
+            <otherwise>  
+                AND tb_template.releaseReviewState != #{condition.releaseReviewState}   
+            </otherwise>  
+        </choose>
+	</sql>
+	
+	<!-- 获取模板发布列表数据 -->
+	<select id="listTmplReleaseTbData" parameterType="PageInfo" resultType="Template">
+		SELECT
+			tb_template.tmplId AS tmplId,
+			tb_template.tmplName AS tmplName,
+			tb_template.releaseRange AS releaseRange,
+			tb_mechanism.mechanismName as releaseDept,
+			tb_template.releaseReviewState AS releaseReviewState,
+			tb_template.releaseReviewTime AS releaseReviewTime,
+			tb_user.realName AS releaser
+		FROM
+			tb_template
+		LEFT JOIN 
+			tb_mechanism
+		ON(tb_template.releaseDept = tb_mechanism.mechanismId),
+			tb_user
+		<where>
+			<include refid="tmplReleaseTbCondition"/>
+		</where>
+		ORDER BY tb_template.releaseReviewTime DESC
+		LIMIT #{from}, #{size}
+	</select>
+	
+	<!-- 获取模板列表总数 -->
+	<select id="getTmplReleaseTbTotal" parameterType="PageInfo" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tb_template,
+			tb_user
+		<where>
+			<include refid="tmplReleaseTbCondition" />
+		</where>
+	</select>
+	
+	<!-- 根据条件查询模板发布审核信息 -->
+	<select id="getTmplReleaseReviewInfo" parameterType="Map" resultMap="tmplReleaseMap">
+		SELECT
+			tb_template.tmplId AS tmplId,
+			tb_template.tmplName AS tmplName,
+			tb_dic_item.itemName AS tmplTypeName,
+			tb_template.tmplPrice AS tmplPrice,
+			tb_template.description AS description,
+			tb_template.releaseReviewState AS releaseReviewState,
+			tb_user.realName AS releaser,
+			tb_mechanism.mechanismName AS releaseDept,
+			tb_template.releaseReviewTime AS releaseReviewTime,
+			tb_template.releaseRange AS releaseRange,
+			tb_template.tmplScript AS script
+		FROM
+			tb_template
+		LEFT JOIN
+			tb_dic_item
+		ON (tb_template.tmplType = tb_dic_item.itemId)
+		LEFT JOIN
+			tb_user
+		ON (tb_user.userId = tb_template.releaser)
+		LEFT JOIN
+			tb_mechanism
+		ON (tb_user.departmentId = tb_mechanism.mechanismId) 
+		<where>
+			1=1
+			<if test="tmplId != '' and tmplId != null">
+				AND tb_template.tmplId = #{tmplId}
+			</if>
+		</where>
+	</select>
+
+
+	<!-- 获取模板文件-->
+	<select id="getTmplFile" parameterType="Map" resultType="FileInfo">
+		SELECT
+		tb_file_info.fileId AS fileId,
+		tb_file_info.correlationId AS correlationId,
+		tb_file_info.fileUrl AS fileUrl,
+		tb_file_info.fileName AS fileName,
+		tb_file_info.fileSize AS fileSize
+		FROM
+		tb_file_info
+		<where>
+			tb_file_info.distinguishFlag = #{distinguishFlag} AND
+			tb_file_info.state = #{state}
+			<if test="correlationId != null and correlationId!=''">
+				AND tb_file_info.correlationId = #{correlationId}
+			</if>
+		</where>
+	</select>
+</mapper>

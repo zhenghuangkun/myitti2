@@ -1,0 +1,231 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+}
+a {
+    color: #337ab7;
+    text-decoration: none;
+}
+.header {
+    background-color: #2196F3;
+    color: white;
+    text-align: center;
+    padding: 15px;
+}
+.footer {
+    background-color: #444;
+    color: white;
+    padding: 15px;
+}
+.topmenu {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #777;
+}
+.topmenu li {
+    float: left;
+}
+.topmenu li a {
+    display: inline-block;
+    color: white;
+    text-align: center;
+    padding: 16px;
+    text-decoration: none;
+}
+.topmenu li a:hover {
+    background-color: #222;
+}
+.topmenu li a.active {
+    color: white;
+    background-color: #4CAF50;
+}
+.column {
+    float: left;
+    padding: 15px;
+}
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+.sidemenu {
+    width: 25%;
+}
+.content {
+    width: 75%;
+}
+.sidemenu ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+.sidemenu li a {
+	text-align:center;
+	margin-bottom: 4px;
+    display: block;
+    padding: 8px;
+    background-color: #eee;
+    text-decoration: none;
+    color: #666;
+}
+.sidemenu li a:hover {
+    background-color: #555;
+    color: white;
+}
+.sidemenu li a.active {
+    background-color: #008CBA;
+    color: white;
+}
+
+.courses-list-wrapper {
+    border-bottom: 1px solid #eee;
+    padding: 20px 0;
+}
+.courses-list-wrapper .courses-list-item .course-img .course-progress-bar {
+    width: 100%;
+    height: 5px;
+    background-color: #eee;
+}
+.courses-list-wrapper .courses-list-item .course-detail {
+    padding: 15px;
+}
+.course-name {
+    font-size: 16px;
+    margin-bottom: 20px;
+    color: #666;
+}
+.last-learn {
+    font-size: 14px;
+    margin-bottom: 19px;
+    color: #666;
+}
+
+.main-navigation{
+			text-align: center;
+    		background: #ffffff;
+		}
+		.main-navigation ul.menu{
+    		margin:0;
+		}
+
+		.main-navigation .menu li {
+    		list-style: none;
+    		display: inline-block;
+    		position: relative;
+    		width:120px;
+    		line-height:40px;
+		}
+
+		.main-navigation .menu li a{
+    		text-decoration:none;
+    		font-size:16px;
+    		color:#595959;
+    		display:inline-block;
+			width:120px;
+		}
+
+		.layui-colla-icon{
+			position: relative;
+		}
+
+		.editname{
+			display:inline-block;
+			font-size:16px;
+			color:#9f9f9f;
+			margin:0 40px;
+		}
+
+		.editnum{
+			display:inline-block;
+			font-size:16px;
+			width:250px;
+			margin-left:30px;
+		}
+
+		.editpwd{
+			background-color:#fff;
+			font-size:16px;
+			color:#0b8bf0
+		}
+
+		#information table td{
+			vertical-align: middle;
+		}
+		
+		#changeimg a{
+			position:relative; /*杩欎釜鏄叧閿�*/ 
+			z-index:2; 
+		}
+		
+		#changeimg a:hover{
+			z-index:3; 
+			background:none; /*娌℃湁杩欎釜鍦↖E涓笉鍙敤*/ 
+		}
+		
+		#changeimg a span{
+			display: none;  
+		}
+		
+		#changeimg a:hover span{
+		display:block; 
+ 		position:absolute;
+		top:100px; 
+		left:50%;  
+		width:100px; 
+		border:1px solid black; 
+		background-color:#fff; 
+		padding: 3px; 
+		color:black;
+		}
+		
+		.warn{
+		display: inline-block;
+		width:22px;
+		height:22px;
+		background: url("../images/adm_ico00.png");
+		background-repeat: no-repeat;
+		background-size:22px 22px;
+		vertical-align: top;
+	}
+	.right{
+		display: inline-block;
+		width:22px;
+		height:22px;
+		background: url("../images/adm_ico01.png");
+		background-repeat: no-repeat;
+		background-size:22px 22px;
+		vertical-align: top;
+	}
+	.cuo{
+		display: inline-block;
+		width:22px;
+		height:22px;
+		background: url("../images/adm_ico02.png");
+		background-repeat: no-repeat;
+		background-size:22px 22px;
+		vertical-align: top;
+	}
+	#oldPwdIco{
+		display:none;
+		font-size: 14px;
+		color:#888;
+	}
+	#newPwdIco{
+		display: none;
+		font-size: 14px;
+		color:#888;
+	}
+	#confirmPwdIco{
+		display: none;
+		font-size: 14px;
+		color:#888;
+	}
+	
+	//澶村儚涓婁紶
+	
+	

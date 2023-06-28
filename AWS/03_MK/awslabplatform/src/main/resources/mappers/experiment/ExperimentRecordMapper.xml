@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.awslabplatform.dao.experimentManage.ExperimentRecordDao">
+	<insert id="addOne" parameterType="com.awslabplatform.entity.ExperimentRecord">
+		INSERT INTO tb_experimentRecord
+		VALUES (#{id},#{studentId},#{experimentId},#{stackName},#{startTime},#{endTime},#{stopTime},#{keyUrl},#{keyName},#{awsUrl},#{windowsPassword},#{status})
+	</insert>
+<!-- 	只能修改结束时间和状态 -->
+	<update id="update" parameterType="com.awslabplatform.entity.ExperimentRecord">
+		UPDATE tb_experimentRecord 
+		SET 
+			endTime=#{endTime},
+			`status`=#{status}
+		WHERE id=#{id}
+	</update>
+	<select id="getRunning" parameterType="String" resultType="com.awslabplatform.entity.ExperimentRecord">
+		SELECT id,studentId,experimentId,stackName,startTime,endTime,stopTime,keyUrl,keyName,awsUrl,windowsPassword,status 
+		FROM tb_experimentRecord 
+		WHERE studentId=#{studentId} AND `status`='0'
+	</select>
+</mapper>

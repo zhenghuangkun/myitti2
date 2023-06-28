@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.awslabplatform_admin.dao.awsAccountManage.AwsIamPoolDao">
+	<resultMap type="com.awslabplatform_admin.entity.AwsIamPool" id="AwsIamPoolMap">
+		<result property="id" column="id"/>
+		<result property="accountID" column="accountID"/>
+		<result property="payAccountID" column="payAccountID"/>
+		<result property="payAccountName" column="payAccountName"/>
+		<result property="useType" column="useType"/>
+		<result property="isUsed" column="isUsed"/>
+		<result property="currentUserID" column="currentUserID"/>
+		<result property="currentUserName" column="currentUserName"/>
+		<result property="createTime" column="createTime"/>
+		<result property="updateTime" column="updateTime"/>
+		<result property="isActive" column="isActive"/>
+		<result property="isDelete" column="isDelete"/>
+		<result property="account" column="account"/>
+	</resultMap>
+	
+	<!-- 查询添加accountID是否已经存在  -->
+	<select id="countAwsIamPoolData" parameterType="AwsIamPool" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tb_aws_accountPool
+		<where>
+			1 = 1
+			<if test="accountID != null">
+				AND accountID = #{accountID}
+			</if>
+			<if test="isActive != null">
+				AND isActive = #{isActive}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 插入添加AWSIAMPool账户信息  -->
+	<insert id="insert" parameterType="AwsIamPool">
+	<selectKey keyProperty="id" resultType="java.lang.String" order="BEFORE">
+         SELECT REPLACE(UUID(),'-','')
+ 	</selectKey>
+       INSERT INTO tb_aws_accountPool(
+       		id,accountID,payAccountID,payAccountName,useType,createTime)
+       VALUES (#{id},#{accountID},#{payAccountID},#{payAccountName},#{useType},#{createTime})
+	</insert>
+
+	<!-- 获取AWSIamPool的数据，将数据显示在表格上  -->
+	<select id="getAwsIamPoolData"  parameterType="PageInfo" resultType="AwsIamPool">
+     SELECT 
+		 a.id,a.accountID,a.payAccountID,a.payAccountName,a.useType,a.isUsed,a.currentUserID,
+		 a.currentUserName,a.createTime,a.updateTime,a.isActive,a.isDelete,a.account
+     FROM
+         tb_aws_accountPool AS a
+	   <where>
+			1 = 1
+ 			<if test="condition.containsKey('accountID') and condition.accountID != ''">
+				AND a.accountID like concat('%',#{condition.accountID},'%')
+			</if> 
+			<if test="condition.containsKey('payAccountID') and condition.payAccountID != ''">
+				AND a.payAccountID =#{condition.payAccountID}
+			</if>
+			<if test="condition.containsKey('isDelete') and condition.isDelete != null">
+				AND a.isDelete =#{condition.isDelete}
+			</if>
+			<if test="condition.containsKey('isUsed') and condition.isUsed != '-1'">
+				AND a.isUsed = #{condition.isUsed}
+			</if>
+			ORDER BY a.isActive,a.createTime DESC
+	   </where>
+	   LIMIT #{from}, #{size}
+	</select>
+
+   <!-- 查询AWSIamPool数据的数量  -->
+	<select id="countAwsIamPool" parameterType="PageInfo" resultType="int">
+     SELECT 
+	    COUNT(*)
+     FROM
+        tb_aws_accountPool AS a
+	   <where>
+			1 = 1
+ 			<if test="condition.containsKey('accountID') and condition.accountID != ''">
+				AND a.accountID like concat('%',#{condition.accountID},'%')
+			</if> 
+			<if test="condition.containsKey('payAccountID') and condition.payAccountID != ''">
+				AND a.payAccountID =#{condition.payAccountID}
+			</if>
+			<if test="condition.containsKey('isDelete') and condition.isDelete != null">
+				AND a.isDelete =#{condition.isDelete}
+			</if>
+			<if test="condition.containsKey('isUsed') and condition.isUsed != '-1'">
+				AND a.isUsed = #{condition.isUsed}
+			</if>
+	   </where>
+	</select>
+	
+	<!-- 假删除AWSIamPool数据的数据信息  0：未删除  1：删除-->
+    <delete id="deleteAwsIamPoolData" parameterType="String" >
+        UPDATE tb_aws_accountPool SET isDelete = #{isDelete} WHERE id = #{id}
+  	</delete>
+  	
+  	<!-- 根据条件获取AWSIAMPool的数据，将数据显示在编辑的页面上  -->
+	<select id="selectIdAwsIamPoolData" parameterType="AwsIamPool" resultType="AwsIamPool">
+		SELECT
+	       accountPool.id,accountPool.accountID,accountPool.payAccountID,accountPool.payAccountName,accountPool.useType,accountPool.isUsed,accountPool.currentUserID,
+		   accountPool.currentUserName,accountPool.createTime,accountPool.updateTime,accountPool.isActive,accountPool.isDelete,accountPool.account,
+		   awsIam.id as IAMId,awsIam.IAMName as IAMName,awsIam.password as password,awsIam.accessKeyID as accessKeyID,awsIam.accessKey as accessKey
+        FROM
+           tb_aws_accountPool AS accountPool
+        LEFT OUTER JOIN tb_aws_iam as awsIam on (accountPool.id=awsIam.awsAccount)
+	   <where>
+			1 = 1
+			<if test="id!= null">
+				AND accountPool.id =#{id}
+			</if>
+			<if test="IAMKind!= null">
+				AND awsIam.IAMKind =#{IAMKind}
+			</if>
+	   </where>
+	</select>
+	
+	<!-- 编辑是判断数据库的数量是否存在  -->
+	<select id="countEditAwsIamPoolData" parameterType="PageInfo" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tb_aws_accountPool as awsAccountPool
+		LEFT OUTER JOIN tb_aws_iam as awsIam on (awsAccountPool.id=awsIam.awsAccount)
+		<where>
+			1 = 1
+			<if test="condition.containsKey('isActive') and condition.isActive != null">
+				AND awsAccountPool.isActive = #{condition.isActive}
+			</if>
+			<if test="condition.containsKey('accountID') and condition.accountID != null">
+				AND awsAccountPool.accountID = #{condition.accountID}
+			</if>
+			<if test="condition.containsKey('IAMName') and condition.IAMName != null">
+				AND awsIam.IAMName = #{condition.IAMName}
+			</if>
+		</where>
+	</select>
+		
+	<!-- 修改AWSIAMPOOL的数据  -->
+	<update id="updateByPrimaryKeySelective" parameterType="AwsIamPool">
+		UPDATE tb_aws_accountPool
+		<set>
+			<if test="accountID != null">
+				accountID = #{accountID},
+			</if>
+			<if test="payAccountID != null">
+				payAccountID = #{payAccountID},
+			</if>
+			<if test="payAccountName != null">
+				payAccountName = #{payAccountName},
+			</if>
+			<if test="useType != null">
+				useType = #{useType},
+			</if>
+			<if test="isUsed != null">
+				isUsed = #{isUsed},
+			</if>
+			<if test="currentUserID != null">
+				currentUserID = #{currentUserID},
+			</if>			
+			<if test="currentUserName != null">
+				currentUserName = #{currentUserName},
+			</if>
+			<if test="updateTime != null">
+				updateTime = #{updateTime},
+			</if>			
+			<if test="isActive != null">
+				isActive = #{isActive},
+			</if>
+			<if test="isDelete !=null">
+			  isDelete=#{isDelete},
+			</if>
+			<if test="account !=null">
+			  account=#{account},
+			</if>
+		</set>
+		<where>
+			id = #{id}
+		</where>
+	</update>
+	
+	<!-- 根据对应的付款账户及付款名称的条件获取AWSIAMPool的数据  -->
+	<select id="selectAwsIamPoolData" parameterType="AwsIamPool" resultType="AwsIamPool">
+		SELECT
+	       accountPool.id,accountPool.accountID,accountPool.payAccountID,accountPool.payAccountName,accountPool.useType,accountPool.isUsed,accountPool.currentUserID,
+		   accountPool.currentUserName,accountPool.createTime,accountPool.updateTime,accountPool.isActive,accountPool.isDelete,accountPool.account
+        FROM
+           tb_aws_accountPool AS accountPool
+	   <where>
+			1 = 1
+			<if test="payAccountID!= null">
+				AND accountPool.payAccountID =#{payAccountID}
+			</if>
+			<if test="payAccountName!= null">
+				AND accountPool.payAccountName =#{payAccountName}
+			</if>
+	   </where>
+	</select>
+	
+</mapper>

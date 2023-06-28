@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform_admin.dao.template.InstanceImageDao">
+
+
+	<!-- 插入模板实例镜像 -->
+	<insert id="insertTmplInstanceImage" parameterType="InstanceImage">
+		INSERT INTO tb_instance_image(id, imageId, instanceId, imageName, imageDescribe, imageState,optTime, operator)
+		VALUES (#{id},#{imageId}, #{instanceId}, #{imageName}, #{imageDescribe}, #{imageState}, #{optTime}, #{operator})
+	</insert>
+
+	<!-- 获取模板实例镜像数据 -->
+	<select id="listTmplInstanceImage" parameterType="Map" resultType="InstanceImage">
+		SELECT
+		tb_instance_image.id AS id,
+		tb_instance_image.imageId AS imageId,
+		tb_instance_image.instanceId AS instanceId,
+		tb_instance_image.correlationId AS correlationId,
+		tb_instance_image.imageName AS imageName,
+		tb_instance_image.describe AS describe,
+		tb_instance_image.imageState AS imageState,
+		tb_instance_image.optTime AS optTime,
+		tb_instance_image.operator AS operator
+		FROM
+		tb_instance_image
+		<where>
+			1=1
+			<if test="instanceId != null and instanceId != ''">
+				AND tb_instance_image.instanceId = #{instanceId}
+			</if>
+		</where>
+	</select>
+
+	<!-- 更新实例镜像信息 -->
+	<update id="updateTmplInstanceImage" parameterType="InstanceImage">
+		UPDATE tb_instance_image
+		<trim prefix="set" suffixOverrides=",">
+			<if test="imageDescribe != null">
+				imageDescribe = #{imageDescribe},
+			</if>
+			<if test="imageState != null">
+				imageState = #{imageState},
+			</if>
+			<if test="optTime != null">
+				optTime = #{optTime},
+			</if>
+			<if test="operator != null and operator != ''">
+				operator = #{operator},
+			</if>
+		</trim>
+		<where>
+			imageId = #{imageId} 
+			<if test="operator != null and operator != ''">
+				AND operator = #{operator}
+			</if>
+		</where>
+	</update>
+	
+	<!-- 查询模板镜像列表条件 -->
+	<sql id="tmplImageTbCondition">
+		1=1
+		<if test="condition.containsKey('keyword') and condition.keyword != '' and condition.keyword != null">
+			AND tb_instance_image.imageId like concat('%',#{condition.keyword},'%')
+		</if>
+		<if test="condition.containsKey('operator') and condition.operator != '' and condition.operator != null">
+			AND tb_instance_image.operator = #{condition.operator}
+		</if>
+		
+	</sql>
+	
+	<!-- 获取模板镜像列表数据 -->
+	<select id="listTmplImageTbData" parameterType="PageInfo"
+		resultType="InstanceImage">
+		SELECT
+			tb_instance_image.id AS id,
+			tb_instance_image.imageId AS imageId,
+			tb_instance_image.instanceId AS instanceId,
+			tb_template_instance.instanceType AS instanceType,
+			tb_instance_image.imageName AS imageName,
+			tb_instance_image.imageDescribe AS imageDescribe,
+			tb_instance_image.imageState AS imageState,
+			tb_instance_image.optTime AS optTime,
+			tb_instance_image.operator AS operator
+		FROM
+			tb_instance_image
+		LEFT JOIN
+			tb_template_instance
+		ON (tb_instance_image.instanceId = tb_template_instance.instanceId)
+		<where>
+			<include refid="tmplImageTbCondition" />
+		</where>
+		ORDER BY tb_instance_image.optTime DESC
+		LIMIT #{from}, #{size}
+	</select>
+	
+	<!-- 获取模板镜像列表总数 -->
+	<select id="getTmplImageTbTotal" parameterType="PageInfo"
+		resultType="int"> 
+		SELECT
+			COUNT(*)
+		FROM
+			tb_instance_image
+		<where>
+			<include refid="tmplImageTbCondition" />
+		</where>
+	</select>
+	
+	<!-- 获取模板镜操作凭证信息 -->
+	<select id="getUserCredentialsInfo" parameterType="Map" resultType="InstanceImage"> 
+		SELECT
+			tb_aws_iam.accessKeyID,
+			tb_aws_iam.accessKey,
+			tb_aws_iam.region
+		FROM
+			tb_user
+		LEFT JOIN
+			tb_aws_iam
+		ON (tb_aws_iam.id = tb_user.IAM)
+		<where>
+			1=1 			
+			<if test="userId != null and userId != ''">
+				AND tb_user.userId = #{userId}
+			</if>
+			<if test="userState != null">
+				AND tb_user.userState = #{userState}
+			</if>
+			<if test="iamState != null">
+				AND tb_aws_iam.IAMStatus = #{iamState}
+			</if>
+		</where>
+	</select>
+
+
+</mapper>

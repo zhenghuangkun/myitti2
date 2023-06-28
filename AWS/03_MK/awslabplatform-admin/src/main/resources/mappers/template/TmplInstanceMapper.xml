@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform_admin.dao.template.TmplInstanceDao">
+
+
+	<!-- 插入模板实例 -->
+	<insert id="insertTmplInstance" parameterType="AwsInstance">
+		INSERT INTO tb_template_instance(
+		id, instanceId, instanceName, correlationId, keyName, publicIpAddress,
+		privateIpAddress, instanceType, instanceState, operator, optTime)
+		VALUES (
+		#{id}, #{instanceId}, #{instanceName}, #{correlationId}, #{keyName}, #{publicIpAddress},
+		#{privateIpAddress}, #{instanceType}, #{instanceState}, #{operator}, #{optTime})
+	</insert>
+
+	<!-- 插入多个实例信息 -->
+	<insert id="insertmplInstanceList" parameterType="List">
+		INSERT INTO
+		tb_template_instance (id, instanceId, instanceName, correlationId, keyName, publicIpAddress,
+		privateIpAddress, instanceType, instanceState,operator,optTime)
+		VALUES
+		<foreach collection="list" item="instance" index="index"
+			separator=",">
+			(#{instance.id}, #{instance.instanceId}, #{instance.instanceName}, #{instance.correlationId},
+			#{instance.keyName}, #{instance.publicIpAddress},
+			#{instance.privateIpAddress}, #{instance.instanceType},
+			#{instance.instanceState},#{instance.operator},#{instance.optTime})
+		</foreach>
+	</insert>
+
+	<!-- 获取模板实例数据 -->
+	<select id="listTmplInstance" parameterType="Map" resultType="AwsInstance">
+		SELECT
+		tb_template_instance.id AS id,
+		tb_template_instance.instanceId AS instanceId,
+		tb_template_instance.instanceName AS instanceName,
+		tb_template_instance.correlationId AS correlationId,
+		tb_template_instance.keyName AS keyName,
+		tb_template_instance.publicIpAddress AS publicIpAddress,
+		tb_template_instance.privateIpAddress AS privateIpAddress,
+		tb_template_instance.instanceType AS instanceType,
+		tb_template_instance.instanceState AS instanceState,
+		tb_file_info.fileUrl AS keyPairUrl
+		FROM
+		tb_template_instance
+		LEFT JOIN
+		tb_file_info
+		ON (tb_file_info.correlationId = tb_template_instance.keyName)
+		<where>
+			1=1
+			<if test="stackName != null and stackName != ''">
+				AND tb_template_instance.correlationId = #{stackName}
+			</if>
+		</where>
+	</select>
+
+	<!-- 更新模板实例信息 -->
+	<update id="updateTmplInstances" parameterType="java.util.List">
+		UPDATE tb_template_instance
+		<trim prefix="set" suffixOverrides=",">
+			<trim prefix="instanceState = case" suffix="end,">
+				<foreach collection="list" item="item">
+					<if test="item !=null">
+						<if test="item.instanceState !=null and item.instanceState != ''">
+							when
+							id = #{item.id}
+							then #{item.instanceState}
+						</if>
+					</if>
+				</foreach>
+			</trim>
+			<trim prefix="operator = case" suffix="end,">
+				<foreach collection="list" item="item">
+					<if test="item !=null">
+						<if test="item.operator !=null and item.operator!= ''">
+							when
+							id = #{item.id}
+							then #{item.operator}
+						</if>
+					</if>
+				</foreach>
+			</trim>
+			<trim prefix="optTime = case" suffix="end,">
+				<foreach collection="list" item="item">
+					<if test="item !=null">
+						<if test="item.optTime !=null and item.optTime != ''">
+							when
+							id = #{item.id}
+							then #{item.optTime}
+						</if>
+					</if>
+				</foreach>
+			</trim>
+		</trim>
+		<where>
+			<foreach collection="list" separator="or" item="item">
+				<if test="item !=null">
+					(id = #{item.id})
+				</if>
+			</foreach>
+		</where>
+	</update>
+	
+	<!-- 更新实例信息 -->
+	<update id="updateTmplInstance" parameterType="AwsInstance">
+		UPDATE tb_template_instance
+		<trim prefix="set" suffixOverrides=",">
+			<if test="instanceState != null and instanceState !=''">
+				instanceState = #{instanceState},
+			</if>
+		</trim>
+		<where>
+			instanceId = #{instanceId}
+		</where>
+	</update>
+	
+	
+	<!-- 查询模板实例列表条件 -->
+	<sql id="tmplInstanceTbCondition">
+		1=1
+		<if test="condition.containsKey('keyword') and condition.keyword != '' and condition.keyword != null">
+			AND tb_template_instance.instanceId like concat('%',#{condition.keyword},'%')
+		</if>
+		<if test="condition.containsKey('operator') and condition.operator != '' and condition.operator != null">
+			AND tb_template_instance.operator = #{condition.operator}
+		</if>
+		
+	</sql>
+	
+	<!-- 获取模板实例列表数据 -->
+	<select id="listTmplInstanceTbData" parameterType="PageInfo"
+		resultType="AwsInstance">
+		SELECT
+			tb_template_instance.id AS id,
+			tb_template_instance.instanceId AS instanceId,
+			tb_template_instance.instanceName AS instanceName,
+			tb_template_useapply.applyId AS applyId,
+			tb_template_useapply.tmplId AS tmplId,
+			tb_template_instance.keyName AS keyName,
+			tb_template_instance.publicIpAddress AS publicIpAddress,
+			tb_template_instance.privateIpAddress AS privateIpAddress,
+			tb_template_instance.instanceType AS instanceType,
+			tb_template_instance.instanceState AS instanceState
+		FROM
+			tb_template_instance
+		LEFT JOIN
+			tb_template_useapply
+		ON (tb_template_instance.correlationId = tb_template_useapply.stackName)
+		<where>
+			<include refid="tmplInstanceTbCondition" />
+		</where>
+		ORDER BY tb_template_instance.optTime DESC
+		LIMIT #{from}, #{size}
+	</select>
+	
+	<!-- 获取模板实例列表总数 -->
+	<select id="getTmplInstanceTbTotal" parameterType="PageInfo"
+		resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+		tb_template_instance
+		<where>
+			<include refid="tmplInstanceTbCondition" />
+		</where>
+	</select>
+
+</mapper>

@@ -1,0 +1,6 @@
+
+学生端
+http://ec2-52-83-219-121.cn-northwest-1.compute.amazonaws.com.cn
+
+管理端
+http://ec2-52-83-219-121.cn-northwest-1.compute.amazonaws.com.cn/admin

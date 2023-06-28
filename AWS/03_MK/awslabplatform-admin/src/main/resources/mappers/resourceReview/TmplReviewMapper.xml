@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform_admin.dao.resourceReview.TmplReviewDao">
+
+	<resultMap id="tmplUseApply" type="TmplUseApply">
+		<id property="applyId" column="applyId" />
+		<result property="tmplId" column="tmplId" />
+		<result property="tmplName" column="tmplName" />
+		<result property="tmplTypeName" column="tmplTypeName" />
+		<result property="applicant" column="applicant" />
+		<result property="applyTime" column="applyTime" />
+		<result property="useStartTime" column="useStartTime" />
+		<result property="useEndTime" column="useEndTime" />
+		<result property="useTimeLength" column="useTimeLength" />
+		<result property="remark" column="remark" />
+		<result property="reviewState" column="reviewState" />
+		<result property="stackName" column="stackName" />
+		<result property="stackDeleteTime" column="stackDeleteTime" />
+		<result property="actualUseLength" column="actualUseLength" />
+		<collection select="getApplyRecordInfo" property="tmplReivewRecord"
+			column="applyId" javaType="ArrayList">
+			<id property="recordId" column="recordId" />
+			<result property="applyId" column="applyId" />
+			<result property="operation" column="operation" />
+			<result property="remark" column="remark" />
+			<result property="operator" column="operator" />
+			<result property="optTime" column="optTime" />
+		</collection>
+		<collection select="listTmplInstance" property="awsInstances"
+			column="stackName" javaType="ArrayList">
+			<id property="id" column="id" />
+			<result property="instanceId" column="instanceId" />
+			<result property="instanceName" column="instanceName" />
+			<result property="correlationId" column="correlationId" />
+			<result property="keyName" column="keyName" />
+			<result property="publicIpAddress" column="publicIpAddress" />
+			<result property="privateIpAddress" column="privateIpAddress" />
+			<result property="instanceType" column="instanceType" />
+			<result property="instanceState" column="instanceState" />
+			<result property="keyPairUrl" column="keyPairUrl" />
+		</collection>
+	</resultMap>
+
+	<!-- 插入模板试用申请记录 -->
+	<insert id="insertTmplUseApply" parameterType="TmplUseApply">
+		INSERT INTO tb_template_useapply(
+		applyId, tmplId, applicant, applyTime, useTimeLength,totalPrice, reviewState)
+		VALUES (
+		#{applyId}, #{tmplId}, #{applicant}, #{applyTime}, #{useTimeLength},
+		#{totalPrice}, #{reviewState})
+	</insert>
+
+	<!-- 插入模板试用申请审核记录 -->
+	<insert id="insertTmplReviewRecord" parameterType="TmplReivewRecord">
+		INSERT INTO tb_template_review_record(
+		recordId, applyId, operation, remark, operator, optTime)
+		VALUES (
+		#{recordId}, #{applyId}, #{operation}, #{remark}, #{operator}, #{optTime})
+	</insert>
+
+	<!-- 更新用户申请记录 -->
+	<update id="updateTmplUseApply" parameterType="TmplUseApply">
+		UPDATE tb_template_useapply
+		<trim prefix="set" suffixOverrides=",">
+			<if test="tmplId != null and tmplId !=''">
+				tmplId = #{tmplId},
+			</if>
+			<if test="applicant != null and applicant !=''">
+				applicant = #{applicant},
+			</if>
+			<if test="applyTime != null and applyTime !=''">
+				applyTime = #{applyTime},
+			</if>
+			<if test="stackId != null">
+				stackId = #{stackId},
+			</if>
+			<if test="stackName != null">
+				stackName = #{stackName},
+			</if>
+			<if test="useStartTime != null and useStartTime != ''">
+				useStartTime = #{useStartTime},
+			</if>
+			<if test="useEndTime != null and useEndTime != ''">
+				useEndTime = #{useEndTime},
+			</if>
+			<if test="useTimeLength != null">
+				useTimeLength = #{useTimeLength},
+			</if>
+			<if test="actualUseLength != null">
+				actualUseLength = #{actualUseLength},
+			</if>
+			<if test="stackState != null and stackState != ''">
+				stackState = #{stackState},
+			</if>
+			<if test="stackDeleteTime != null">
+				stackDeleteTime = #{stackDeleteTime},
+			</if>
+			<if test="totalPrice != null">
+				totalPrice = #{totalPrice},
+			</if>
+			<if test="reviewState != null">
+				reviewState = #{reviewState},
+			</if>
+		</trim>
+		<where>
+			applyId = #{applyId}
+		</where>
+	</update>
+
+	<!-- 获取模板申请信息 -->
+	<select id="getTmplUseApplyInfo" parameterType="Map" resultMap="tmplUseApply">
+		SELECT
+		applyId,
+		tmplId,
+		tb_user.realName AS applicant,
+		applyTime,
+		stackId,
+		stackName,
+		useStartTime,
+		useEndTime,
+		stackDeleteTime,
+		useTimeLength,
+		actualUseLength,
+		totalPrice,
+		stackState,
+		reviewState
+		FROM
+		tb_template_useapply,
+		tb_user
+		<where>
+			1=1 AND tb_user.userId = tb_template_useapply.applicant
+			<if test="applyId != '' and applyId != null">
+				AND tb_template_useapply.applyId = #{applyId}
+			</if>
+			<if test="reviewState != 0 and reviewState != null">
+				AND tb_template_useapply.reviewState = #{reviewState}
+			</if>
+		</where>
+	</select>
+
+	<!-- 获取模板申请审核记录 -->
+	<select id="getApplyRecordInfo" parameterType="String"
+		resultType="TmplReivewRecord">
+		SELECT
+		recordId,
+		applyId,
+		operation,
+		remark,
+		tb_user.realName AS operator,
+		optTime
+		FROM
+		tb_template_review_record,
+		tb_user
+		<where>
+			1=1 AND tb_user.userId = tb_template_review_record.operator
+			<if test="_parameter != '' and _parameter != null">
+				AND tb_template_review_record.applyId = #{_parameter}
+			</if>
+			ORDER BY optTime DESC
+		</where>
+	</select>
+
+	<!-- 查询模板申请记录总数 -->
+	<select id="getUseApplyTotal" parameterType="Map" resultType="int">
+		SELECT
+		COUNT(*)
+		FROM
+		tb_template_useapply
+		<where>
+			1=1
+			<if test="applyId != '' and applyId != null">
+				AND tb_template_useapply.applyId = #{applyId}
+			</if>
+			<if test="tmplId != '' and tmplId != null">
+				AND tb_template_useapply.tmplId = #{tmplId}
+			</if>
+			<if test="applicant != '' and applicant != null">
+				AND tb_template_useapply.applicant = #{applicant}
+			</if>
+			<if test="state != null">
+				AND tb_template_useapply.reviewState = #{state}
+			</if>
+		</where>
+	</select>
+
+	<!-- 查询模板申请列表条件 -->
+	<sql id="tmplTbCondition">
+		<if
+			test="condition.containsKey('keyword') and condition.keyword != '' and condition.keyword != null">
+			AND tb_template.tmplName like concat('%',#{condition.keyword},'%')
+		</if>
+		<if
+			test="condition.containsKey('applicant') and condition.applicant!= '' and condition.applicant != null">
+			AND tb_template_useapply.applicant = #{condition.applicant}
+		</if>
+		<if
+			test="condition.containsKey('reviewState') and condition.reviewState != null and condition.reviewState != 0">
+			AND tb_template_useapply.reviewState = #{condition.reviewState}
+		</if>
+		<if
+			test="condition.containsKey('departmentId') and condition.departmentId != null and condition.departmentId != ''">
+			AND tb_user.departmentId = #{condition.departmentId}
+		</if>
+		<if
+			test="condition.containsKey('state') and condition.state != null and condition.state != ''">
+			AND tb_template.state = #{condition.state}
+		</if>
+	</sql>
+
+	<!-- 获取模板申请列表数据 -->
+	<select id="listTmplUseApplyTbData" parameterType="PageInfo"
+		resultType="TmplUseApply">
+		SELECT
+		tb_template_useapply.applyId AS applyId,
+		tb_template.tmplId AS tmplId,
+		tb_template.tmplName AS tmplName,
+		tb_dic_item.itemName AS tmplTypeName,
+		tb_template_useapply.applyTime AS applyTime,
+		tb_user.realName AS applicant,
+		tb_template_useapply.useTimeLength AS useTimeLength,
+		tb_template_useapply.totalPrice AS totalPrice,
+		tb_template_useapply.reviewState AS reviewState
+		FROM
+		tb_template_useapply
+		LEFT JOIN
+		tb_template
+		ON (tb_template.tmplId = tb_template_useapply.tmplId)
+		LEFT JOIN
+		tb_user
+		ON (tb_user.userId = tb_template_useapply.applicant)
+		LEFT JOIN
+		tb_dic_item
+		ON (tb_template.tmplType = tb_dic_item.itemId)
+		<where>
+			<include refid="tmplTbCondition" />
+		</where>
+		ORDER BY tb_template_useapply.applyTime DESC
+		LIMIT #{from}, #{size}
+	</select>
+
+	<!-- 获取模板申请列表总数 -->
+	<select id="getTmplUseApplyTbTotal" parameterType="PageInfo"
+		resultType="int">
+		SELECT
+		COUNT(*)
+		FROM
+		tb_template_useapply
+		LEFT JOIN
+		tb_user
+		ON (tb_user.userId = tb_template_useapply.applicant)
+		LEFT JOIN
+		tb_template
+		ON (tb_template.tmplId = tb_template_useapply.tmplId)
+		LEFT JOIN
+		tb_dic_item
+		ON (tb_template.tmplType = tb_dic_item.itemId)
+		<where>
+			<include refid="tmplTbCondition" />
+		</where>
+	</select>
+
+	<!-- 获取模板实例数据 -->
+	<select id="listTmplInstance" parameterType="String" resultType="AwsInstance">
+		SELECT
+		tb_template_instance.id AS id,
+		tb_template_instance.instanceId AS instanceId,
+		tb_template_instance.instanceName AS instanceName,
+		tb_template_instance.correlationId AS correlationId,
+		tb_template_instance.keyName AS keyName,
+		tb_template_instance.publicIpAddress AS publicIpAddress,
+		tb_template_instance.privateIpAddress AS privateIpAddress,
+		tb_template_instance.instanceType AS instanceType,
+		tb_template_instance.instanceState AS instanceState,
+		tb_file_info.fileUrl AS keyPairUrl
+		FROM
+		tb_template_instance
+		LEFT JOIN
+		tb_file_info
+		ON (tb_file_info.correlationId = tb_template_instance.keyName)
+		<where>
+			tb_template_instance.correlationId = #{_parameter}
+		</where>
+	</select>
+
+
+</mapper>

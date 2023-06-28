@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform.dao.experimentManage.ExperimentDao">
+
+
+	<select id="listByCourseId" parameterType="java.lang.String" resultType="com.awslabplatform.entity.Experiment">
+		SELECT
+			tb_experiment.experimentId,
+			tb_experiment.experimentNo,
+			tb_experiment.templateId,
+			tb_experiment.courseId,
+			tb_experiment.experimentName,
+			tb_experiment.description,
+			tb_experiment.createTime,
+			guide.fileUrl AS guideUrl,
+			tb_experiment.runtime,
+			tb_experiment.exeperimentType,
+			keypair.fileName AS keyName,
+			keypair.fileUrl AS keyUrl
+		FROM
+			tb_experiment
+		LEFT JOIN
+			tb_file_info keypair
+		ON
+			tb_experiment.keyFile=keypair.fileId
+		LEFT JOIN
+			tb_file_info guide
+		ON
+			tb_experiment.guideFileId=guide.fileId
+		WHERE
+			courseId=#{courseId}
+		ORDER BY
+			tb_experiment.experimentNo
+	</select>
+	<select id="selectByPrimaryKey" parameterType="java.lang.String" resultType="com.awslabplatform.entity.Experiment">
+		SELECT
+			tb_experiment.experimentId,
+			tb_experiment.experimentNo,
+			template.fileUrl AS templateUrl,
+			tb_experiment.courseId,
+			tb_experiment.experimentName,
+			tb_experiment.description,
+			tb_experiment.createTime,
+			guide.fileUrl AS guideUrl,
+			tb_experiment.runtime,
+			tb_experiment.exeperimentType,
+			keypair.fileName AS keyName,
+			keypair.fileUrl AS keyUrl,
+			tb_experiment.startTime,
+			tb_experiment.endTime,
+			policys.fileUrl AS policyFileUrl,
+			tb_experiment.region
+		FROM
+			tb_experiment
+		LEFT JOIN
+			tb_file_info keypair
+		ON
+			tb_experiment.keyFile=keypair.fileId
+		LEFT JOIN
+			tb_file_info guide
+		ON
+			tb_experiment.guideFileId=guide.fileId
+		LEFT JOIN
+			tb_file_info template
+		ON
+			template.correlationId=tb_experiment.templateId
+		LEFT JOIN tb_policy policys ON policyId=policys.id
+		LEFT JOIN tb_course c ON tb_experiment.courseId=c.courseId
+		WHERE
+			tb_experiment.experimentId=#{experimentId}
+			AND c.`status`=5
+			
+	</select>
+	<!-- 查找教师的凭证 -->
+	<select id="getCredentialsAndRegion" parameterType="java.lang.String" resultType="com.awslabplatform.entity.CredentialsAndRegion">
+		SELECT
+			tb_aws_iam.accessKeyID,tb_aws_iam.accessKey,tb_aws_iam.region
+		FROM
+			tb_aws_iam ,tb_user,tb_course,tb_experiment
+		WHERE
+			tb_aws_iam.id=tb_user.IAM
+			AND tb_user.userId=tb_course.teacherId
+			AND tb_course.courseId=tb_experiment.courseId
+			AND tb_experiment.experimentId=#{experimentId}
+	</select>
+	<!--CH -->
+	<!-- 学生所在院系的院系管理员iam -->
+	<select id="getCredential" parameterType="java.lang.String" resultType="com.awslabplatform.entity.CredentialsAndRegion">
+			SELECT a.id,a.IAMName,a.accessKeyID,a.accessKey from tb_student AS s
+            INNER JOIN tb_mechanism AS m ON s.mechanismId=m.mechanismId
+            INNER JOIN tb_aws_account AS c ON c.departmentId=m.mechanismId
+            INNER JOIN tb_aws_accountPool AS p ON p.payAccountID=c.accountId
+            INNER JOIN tb_aws_iam AS a ON a.awsAccount=p.id
+            WHERE p.useType= #{useType}
+            AND p.isActive= #{isActive}
+            AND p.isDelete= #{isDelete}
+            AND a.IAMKind= #{iamKind}
+            AND s.id= #{studentId}
+            AND c.accountStause= #{accountStause}
+            AND c.isActive =#{accountActive}
+            LIMIT 1
+	</select>
+
+	<select id="getExperimentGroupIdByCourseId" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			groupId
+		FROM
+			tb_course_experimentgroup
+		<where>
+			tb_course_experimentgroup.courseId=#{courseId}
+		</where>
+	</select>
+
+	<select id="getIdByExperimentGroupIdAnduserId" resultType="java.lang.String">
+		SELECT
+			id
+		FROM
+			tb_experiment_group_user
+		<where>
+			tb_experiment_group_user.groupId=#{groupId}
+			AND
+			tb_experiment_group_user.userId=#{userId}
+		</where>
+	</select>
+
+	<select id="getIamInformation" parameterType="string" resultType="com.awslabplatform.entity.StudentExperment">
+      SELECT a.id,a.IAMName,a.password,a.consoleLoginLink,p.payAccountID,p.accountID from tb_student AS s
+      INNER JOIN tb_mechanism AS m ON s.mechanismId=m.mechanismId
+      INNER JOIN tb_aws_account AS c ON c.departmentId =m.mechanismId
+      INNER JOIN tb_aws_accountPool AS p ON p.payAccountID=c.accountId
+      INNER JOIN tb_aws_iam AS a ON a.awsAccount=p.id
+      WHERE a.IAMKind= #{iamKind}
+      AND p.isActive= #{isActive}
+      AND p.isDelete= #{isDelete}
+      AND c.accountStause = #{accountStause}
+      AND c.isActive = #{accountActive}
+	  AND p.currentUserID= #{studentId}
+      LIMIT 1
+	</select>
+
+	<!--<select id="getAccountPoolInformation" parameterType="string" resultType="com.awslabplatform.entity.AccountPool">-->
+    <!--SELECT p.id,p.isUsed,p.account,p.accountID FROM tb_aws_accountPool AS p-->
+    <!--WHERE  p.isActive= #{isActive}-->
+    <!--AND p.isDelete= #{isDelete}-->
+	<!--AND	p.currentUserID= #{currentUserId}-->
+    <!--LIMIT 1-->
+	<!--</select>-->
+
+	<update id="updateControlAccountPool" parameterType="string">
+        UPDATE
+        tb_aws_accountPool
+        SET isUsed= #{used},
+        currentUserID= #{studentId},
+        currentUserName= #{currentUserName},
+        updateTime= #{nowTime}
+        WHERE id = ( SELECT id FROM
+        (SELECT id FROM
+        (SELECT  @rownum := @rownum +1 AS rownum,id FROM
+        (SELECT
+           @rownum := 0) r,
+        (
+        SELECT p.id from tb_student AS s
+        INNER JOIN tb_mechanism AS m ON s.mechanismId=m.mechanismId
+        INNER JOIN tb_aws_account AS c ON c.departmentId =m.mechanismId
+        INNER JOIN tb_aws_accountPool AS p ON p.payAccountID=c.accountId
+        AND s.id= #{studentId}
+        AND p.useType= #{useType}
+        AND p.isActive= #{isActive}
+        AND p.isDelete= #{isDelete}
+        AND p.isUsed = #{isUsed}
+        AND c.accountStause = #{accountStause}
+        AND c.isActive = #{accountActive}
+        ) as a)as b
+        JOIN
+       (SELECT ROUND(RAND() *
+       (SELECT MAX(rownum) FROM(
+        SELECT * FROM (SELECT  @rank := @rank +1 AS rownum,id FROM
+       (SELECT
+         @rank := 0) r,
+       (
+       SELECT p.id from tb_student AS s
+       INNER JOIN tb_mechanism AS m ON s.mechanismId=m.mechanismId
+       INNER JOIN tb_aws_account AS c ON c.departmentId =m.mechanismId
+       INNER JOIN tb_aws_accountPool AS p ON p.payAccountID=c.accountId
+       AND s.id= #{studentId}
+       AND p.useType= #{useType}
+       AND p.isActive= #{isActive}
+       AND p.isDelete= #{isDelete}
+       AND p.isUsed = #{isUsed}
+       AND c.accountStause = #{accountStause}
+       AND c.isActive = #{accountActive}
+       ) as a1)as b1
+       )AS b2
+       )) AS rownum) AS b3
+       WHERE b.rownum>= b3.rownum
+       ORDER BY b.rownum ASC LIMIT 1
+       )AS c
+      )
+    </update>
+
+	<!--<select id="getAccountPoolId" parameterType="string" resultType="string">-->
+	<!--SELECT id FROM tb_aws_accountPool-->
+    <!--WHERE payAccountID= #{payAccountId}-->
+    <!--AND useType= #{useType}-->
+    <!--AND isUsed = #{isUsed}-->
+    <!--AND isActive= #{isActive}-->
+    <!--AND isDelete= #{isDelete}-->
+    <!--AND currentUserID= #{studentId}-->
+    <!--ORDER BY isUsed-->
+    <!--LIMIT 1-->
+	<!--</select>-->
+
+	<select id="getPolicyInformation" parameterType="string" resultType="com.awslabplatform.entity.Policys">
+    SELECT p.id,p.name,p.description,p.fileUrl,p.`status`
+    FROM tb_experiment AS e
+    INNER JOIN tb_policy AS p
+    ON e.policyId =p.id
+    AND p.`status`= #{status}
+    AND e.experimentId= #{experimentId}
+    LIMIT 1
+	</select>
+	<update id="updateIamPassword" parameterType="string" >
+		UPDATE
+        tb_aws_iam AS a
+        SET
+        a.password =#{password}
+        WHERE a.id =#{id}
+	</update>
+	<update id="updateAccountPoolisUesd" parameterType="string">
+		UPDATE
+        tb_aws_accountPool
+        SET isUsed= #{isUsed},
+        currentUserID= null,
+        currentUserName= null,
+        updateTime= #{nowTime}
+        WHERE
+        currentUserID= #{currentUserID}
+	</update>
+	<!--<select id="selectControlAccount" parameterType="string" resultType="string">-->
+    <!--SELECT p.isUsed from tb_student AS s-->
+    <!--INNER JOIN tb_mechanism AS m ON s.mechanismId=m.mechanismId-->
+    <!--INNER JOIN tb_aws_account AS c ON c.departmentId =m.mechanismId-->
+    <!--INNER JOIN tb_aws_accountPool AS p ON p.payAccountID=c.accountId-->
+    <!--AND s.id= #{studentId}-->
+    <!--AND p.useType= #{useType}-->
+    <!--AND p.isActive= #{isActive}-->
+    <!--AND p.isDelete= #{isDelete}-->
+    <!--AND c.accountStause = #{accountStause}-->
+    <!--AND c.isActive = #{accountActive}-->
+    <!--ORDER BY  p.isUsed ASC-->
+    <!--LIMIT 1-->
+	<!--</select>-->
+	<select id="getControlCredential" parameterType="string" resultType="CredentialsAndRegion">
+		SELECT a.id,a.IAMName,a.accessKeyID,a.accessKey,p.accountID from tb_student AS s
+		INNER JOIN tb_mechanism AS m ON s.mechanismId=m.mechanismId
+		INNER JOIN tb_aws_account AS c ON c.departmentId=m.mechanismId
+		INNER JOIN tb_aws_accountPool AS p ON p.payAccountID=c.accountId
+		INNER JOIN tb_aws_iam AS a ON a.awsAccount=p.id
+		WHERE a.IAMKind= #{iamKind}
+		AND p.currentUserID= #{studentId}
+		LIMIT 1
+	</select>
+</mapper>

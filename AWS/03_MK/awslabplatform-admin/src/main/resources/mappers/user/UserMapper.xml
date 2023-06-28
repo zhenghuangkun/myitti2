@@ -1,0 +1,549 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform_admin.dao.userManage.UserDao">
+
+	<resultMap type="com.awslabplatform_admin.entity.User" id="UserMap">
+		<id property="userId" column="userId"/>
+		<result property="phoneNum" column="phoneNum"/>
+		<result property="email" column="email"/>
+		<result property="realName" column="realName"/>
+		<result property="userPwd" column="userPwd"/>
+		<result property="roleType" column="roleType"/>
+		<result property="awsAccount" column="awsAccount"/>
+		<result property="isAwsIam" column="isAwsIam"/>
+		<result property="IAM" column="IAM"/>
+		<result property="schoolId" column="schoolId"/>
+		<result property="departmentId" column="departmentId"/>
+		<result property="birthday" column="birthday"/>
+		<result property="address" column="address"/>
+		<result property="createBy" column="createBy"/>
+		<result property="createTime" column="createTime"/>
+		<result property="userState" column="userState"/>
+		<result property="accountId" column="accountId"/>
+		<result property="mechanismName" column="mechanismName"/>
+		
+	</resultMap>
+
+	<resultMap type="com.awslabplatform_admin.entity.Student" id="StudentMap">
+		<id property="id" column="id"/>
+		<result property="stuId" column="stuId"/>
+		<result property="linkedUserId" column="linkedUserId"/>
+		<result property="IAM" column="IAM"/>
+		<result property="realName" column="realName"/>
+		<result property="mechanismId" column="mechanismId"/>
+		<result property="major" column="major"/>
+		<result property="grade" column="grade"/>
+		<result property="classes" column="classes"/>
+		<result property="phoneNum" column="phoneNum"/>
+		<result property="email" column="email"/>
+		<result property="birthday" column="birthday"/>
+		<result property="address" column="address"/>
+		<result property="runningExperiment" column="runningExperiment"/>
+		<result property="userState" column="userState"/>
+		<result property="picFileId" column="picFileId"/>
+		<result property="picFileUrl" column="picFileUrl"/>
+		<result property="userPwd" column="userPwd"/>
+		<result property="schoolId" column="schoolId"/>
+		
+		<result property="schoolName" column="schoolName"/>
+		<result property="mechanismName" column="mechanismName"/>
+		<result property="majorName" column="majorName"/>
+		<result property="gradeName" column="gradeName"/>
+		<result property="classesName" column="classesName"/>
+		<result property="experimentName" column="experimentName"/>
+
+	</resultMap>
+
+	<!-- 查询根据不同的用户类型查询用户管理的数据，显示在表格的列表上  author:czy -->
+	<select id="selectUserManageData"  parameterType="PageInfo" resultType="User" >
+		SELECT
+			a.userId,a.phoneNum,a.email,a.realName,a.userPwd,a.roleType,a.awsAccount,a.isAwsIam,a.IAM,
+			a.schoolId,a.departmentId,a.birthday,a.address,a.createBy,a.createTime,a.userState,
+			b.accountName as accountName,c.IAMName as iamName,d.mechanismName as mechanismName,e.mechanismName as departmentName
+		FROM
+			tb_user as a
+		LEFT OUTER JOIN
+			tb_aws_account as b on (b.id=a.awsAccount)
+		LEFT OUTER JOIN
+			tb_aws_iam as c on (c.id=a.IAM)
+		LEFT OUTER JOIN
+			tb_mechanism as d on (d.mechanismId=a.schoolId)
+		LEFT OUTER JOIN
+			tb_mechanism as e on (e.mechanismId=a.departmentId)
+	   <where>
+			1 = 1
+ 			<if test="condition.containsKey('departmentId')">
+				AND a.departmentId = #{condition.departmentId}
+			</if> 
+<!-- 			<if test="condition.containsKey('userStateDept')">
+				AND a.userState = #{condition.userStateDept}
+			</if>  -->
+			<if test="condition.containsKey('roleType') and condition.roleType != ''">
+				AND a.roleType = #{condition.roleType}
+			</if>
+			<if test="condition.containsKey('searchData') and condition.searchData != ''">
+				AND CONCAT(IFNULL(a.realName,''),IFNULL(a.email,''),IFNULL(a.phoneNum,''),IFNULL(b.accountName,''),IFNULL(c.IAMName,''),IFNULL(d.mechanismName,''),IFNULL(e.mechanismName,'')) like CONCAT('%',#{condition.searchData},'%')
+			</if>
+			ORDER BY a.userState DESC,a.createTime DESC
+	   </where>
+	   LIMIT #{from}, #{size}
+	</select>
+	
+	<!-- 查询根据不同的用户类型查询用户管理的总条数  author:czy -->
+	<select id="countUserManage" parameterType="PageInfo" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tb_user as a
+		LEFT OUTER JOIN
+			tb_aws_account as b on (b.id=a.awsAccount)
+		LEFT OUTER JOIN
+			tb_aws_iam as c on (c.id=a.IAM)
+		LEFT OUTER JOIN
+			tb_mechanism as d on (d.mechanismId=a.schoolId)
+		LEFT OUTER JOIN
+			tb_mechanism as e on (e.mechanismId=a.departmentId)
+	   <where>
+			1 = 1
+			<if test="condition.containsKey('departmentId')">
+				AND a.departmentId = #{condition.departmentId}
+			</if>
+<!-- 			<if test="condition.containsKey('userStateDept')">
+				AND a.userState = #{condition.userStateDept}
+			</if> --> 
+			<if test="condition.containsKey('roleType') and condition.roleType != ''">
+				AND a.roleType = #{condition.roleType}
+			</if>
+			<if test="condition.containsKey('searchData') and condition.searchData != ''">
+				AND CONCAT(IFNULL(a.realName,''),IFNULL(a.email,''),IFNULL(a.phoneNum,''),IFNULL(b.accountName,''),IFNULL(c.IAMName,''),IFNULL(d.mechanismName,''),IFNULL(e.mechanismName,'')) like CONCAT('%',#{condition.searchData},'%')
+			</if>
+	   </where>
+	</select>
+	
+	<!-- 假删除激活用户管理数据信息-->
+    <delete id="deleteUserData" parameterType="PageInfo">
+        UPDATE tb_user SET userState = #{userState} WHERE userId = #{userId}
+  	</delete>
+  	
+  	
+  	<!-- 根据条件获取用户平台管理员的数据，将数据显示在编辑的页面上 author:wy -->
+	<select id="selectIdUserData" parameterType="java.lang.String" resultType="User">
+		SELECT
+			a.userId,a.phoneNum,a.email,a.realName,a.userPwd,a.roleType,a.awsAccount,a.isAwsIam,a.IAM,
+			a.schoolId,a.departmentId,a.birthday,a.address,a.createBy,a.createTime,a.userState,
+			b.accountName as accountName,c.IAMName as iamName,d.mechanismName as mechanismName,e.roleId
+		FROM
+			tb_user as a
+		LEFT OUTER JOIN
+			tb_aws_account as b on (b.id=a.awsAccount)
+		LEFT OUTER JOIN
+			tb_aws_iam as c on (c.id=a.IAM)
+		LEFT OUTER JOIN
+			tb_mechanism as d on (d.mechanismId=a.schoolId)
+		LEFT OUTER JOIN
+			tb_role_user as e on (e.userId=a.userId)
+	   <where>
+			1 = 1
+			<if test="userId!= null">
+				AND a.userId =#{userId}
+			</if>
+	   </where>
+	</select>
+	
+	<!-- 查询添加姓名是否已经存在 author:wy -->
+	<select id="countUserData" parameterType="User" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tb_user
+		<where>
+			1 = 1
+			<if test="phoneNum != '' or email != ''">
+				AND (phoneNum = #{phoneNum} OR email = #{email})
+			</if>
+		</where>
+	</select>
+	
+	<!-- 插入添加用户账户信息 author:wy -->
+	<insert id="insert" parameterType="User">
+       INSERT INTO tb_user(
+	       	userId,phoneNum,email,realName,userPwd,roleType,awsAccount,isAwsIam,IAM,schoolId,departmentId,birthday,address,createBy,createTime,userState)
+       VALUES (
+           #{userId},#{phoneNum},#{email},#{realName},#{userPwd},#{roleType},#{awsAccount},#{isAwsIam},#{IAM},
+           #{schoolId},#{departmentId},#{birthday},#{address},#{createBy},#{createTime},#{userState})
+	</insert>
+	
+	<!-- 修改用户平台管理员的数据 author:wy -->
+	<update id="updateByPrimaryKeySelective" parameterType="User">
+		UPDATE tb_user
+		<set>
+			<if test="realName != null">
+				realName = #{realName},
+			</if>
+			<if test="schoolId != null">
+				schoolId = #{schoolId},
+			</if>
+			<if test="departmentId != null">
+				departmentId = #{departmentId},
+			</if>
+			<if test="awsAccount != null">
+				awsAccount = #{awsAccount},
+			</if>
+			<if test="IAM != null">
+				IAM = #{IAM},
+			</if>
+			<if test="isAwsIam != null">
+				isAwsIam = #{isAwsIam},
+			</if>
+			<if test="phoneNum != null">
+				phoneNum = #{phoneNum},
+			</if>
+			<if test="email != null">
+				email = #{email},
+			</if>			
+			<if test="birthday != null">
+				birthday = #{birthday},
+			</if>
+			<if test="address != null">
+				address = #{address},
+			</if>			
+		</set>
+		<where>
+			userId = #{userId}
+		</where>
+	</update>
+
+	<select id="getByUserEmail" parameterType="java.lang.String" resultMap="UserMap">
+		SELECT
+			a.userId, a.realName,a.phoneNum,a.email,a.userPwd,a.roleType,a.awsAccount,a.isAwsIam,
+			a.IAM,a.userState,a.createBy,a.createTime,a.schoolId,a.departmentId,b.mechanismName as departmentName,
+			c.mechanismName as mechanismName
+		FROM
+			tb_user as a
+		LEFT OUTER JOIN tb_mechanism as b ON(b.mechanismId=a.departmentId)
+		LEFT OUTER JOIN tb_mechanism as c ON(c.mechanismId=a.schoolId)
+		WHERE
+			a.email = #{email}
+	</select>
+
+	<select id="getByUserPhone" parameterType="java.lang.String" resultMap="UserMap">
+		SELECT
+			a.userId, a.realName,a.phoneNum,a.email,a.userPwd,a.roleType,a.awsAccount,a.isAwsIam,
+			a.IAM,a.userState,a.createBy,a.createTime,a.schoolId,a.departmentId,b.mechanismName as departmentName,
+			c.mechanismName as mechanismName
+		FROM
+			tb_user as a
+		LEFT OUTER JOIN tb_mechanism as b ON(b.mechanismId=a.departmentId)
+		LEFT OUTER JOIN tb_mechanism as c ON(c.mechanismId=a.schoolId)
+		WHERE
+			a.phoneNum = #{phoneNum}
+	</select>
+
+	<select id="getStudentById" parameterType="java.lang.String" resultMap="StudentMap">
+		SELECT
+			id, stuId, realName, phoneNum, email, schoolId, mechanismId, major, grade, classes, birthday, address, runningExperiment, userState, picFileId, f.fileUrl AS picFileUrl
+		FROM
+			tb_student
+		LEFT JOIN
+			tb_file_info AS f
+		ON
+			tb_student.picFileId = f.fileId
+		<where>
+			tb_student.id = #{userId}
+		</where>
+	</select>
+
+	<select id="getUserIdbyGroupId" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT tb_experiment_group_user.userId
+		FROM
+			tb_experiment_group_user
+			<where>
+				tb_experiment_group_user.groupId = #{groupId}
+			</where>
+	</select>
+	
+	<!-- 查询用户管理学生的数据，显示在表格的列表上  author:wy -->
+	<select id="selectUserStuManageData"  parameterType="PageInfo" resultType="Student" >
+        select
+	        a.id,a.stuId,a.realName,a.phoneNum,a.email,a.userPwd,a.schoolId,a.mechanismId,a.major,a.grade,a.classes,
+	        b.mechanismName as schoolName,c.mechanismName as mechanismName,d.mechanismName as majorName,
+	        e.mechanismName as gradeName,f.mechanismName as classesName,a.birthday,
+	        a.address,a.runningExperiment,a.userState,a.picFileId 
+		from 
+		    tb_student as a
+		LEFT OUTER JOIN
+	        tb_mechanism as b on (b.mechanismId=a.schoolId)
+		LEFT OUTER JOIN
+	        tb_mechanism as c on (c.mechanismId=a.mechanismId)
+		LEFT OUTER JOIN
+	        tb_mechanism as d on (d.mechanismId=a.major)
+		LEFT OUTER JOIN
+	        tb_mechanism as e on (e.mechanismId=a.grade)
+		LEFT OUTER JOIN
+	        tb_mechanism as f on (f.mechanismId=a.classes)
+	   <where>
+			1 = 1
+ 			<if test="condition.containsKey('departmentId')">
+				AND a.mechanismId = #{condition.departmentId}
+			</if>  
+			<!-- <if test="condition.containsKey('userState')">
+				AND a.userState = #{condition.userState}
+			</if>  -->
+			<if test="condition.containsKey('searchData') and condition.searchData != ''">
+				AND CONCAT(IFNULL(a.realName,''),IFNULL(b.mechanismName,''),IFNULL(c.mechanismName,''),IFNULL(d.mechanismName,''),IFNULL(e.mechanismName,''),IFNULL(f.mechanismName,''),IFNULL(a.phoneNum,''),IFNULL(a.email,''),IFNULL(a.userState,'')) like CONCAT('%',#{condition.searchData},'%')
+			</if>
+			ORDER BY a.userState DESC
+	   </where>
+	   LIMIT #{from}, #{size}
+	</select>
+	
+	<!-- 查询用户管理学生的总条数  author:wy -->
+	<select id="countUserStuManage" parameterType="PageInfo" resultType="int">
+		select
+	       COUNT(*)
+		from 
+		    tb_student as a
+		LEFT OUTER JOIN
+	        tb_mechanism as b on (b.mechanismId=a.schoolId)
+		LEFT OUTER JOIN
+	        tb_mechanism as c on (c.mechanismId=a.mechanismId)
+		LEFT OUTER JOIN
+	        tb_mechanism as d on (d.mechanismId=a.major)
+		LEFT OUTER JOIN
+	        tb_mechanism as e on (e.mechanismId=a.grade)
+		LEFT OUTER JOIN
+	        tb_mechanism as f on (f.mechanismId=a.classes)
+	   <where>
+			1 = 1
+ 			<if test="condition.containsKey('departmentId')">
+				AND a.mechanismId = #{condition.departmentId}
+			</if>
+<!-- 			<if test="condition.containsKey('userState')">
+				AND a.userState = #{condition.userState}
+			</if> -->
+			<if test="condition.containsKey('searchData') and condition.searchData != ''">
+				AND CONCAT(IFNULL(a.realName,''),IFNULL(b.mechanismName,''),IFNULL(c.mechanismName,''),IFNULL(d.mechanismName,''),IFNULL(e.mechanismName,''),IFNULL(f.mechanismName,''),IFNULL(a.phoneNum,''),IFNULL(a.email,''),IFNULL(a.userState,'')) like CONCAT('%',#{condition.searchData},'%')
+			</if>
+	   </where>
+	</select>
+	
+	<!-- 插入添加学生信息 author:wy -->
+	<insert id="addUserStu" parameterType="Student">
+       INSERT INTO tb_student(
+	       	id,stuId,realName,phoneNum,email,userPwd,schoolId,mechanismId,major,grade,
+	       	classes,birthday,address,runningExperiment,userState,picFileId)
+       VALUES (
+           #{id},#{stuId},#{realName},#{phoneNum},#{email},#{userPwd},#{schoolId},#{mechanismId},#{major},
+           #{grade},#{classes},#{birthday},#{address},#{runningExperiment},#{userState},#{picFileId})
+	</insert>
+	
+	<!-- 查询添加学号是否已经存在 author:wy -->
+	<select id="countUserStuData" parameterType="Student" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tb_student
+		<where>
+			1 = 1
+			<if test="stuId != '' or phoneNum!='' or email!=''">
+				AND (stuId = #{stuId} OR phoneNum=#{phoneNum} OR email=#{email})
+			</if>
+		</where>
+	</select>
+	
+	<!-- 假删除激活学生数据信息 author:wy-->
+    <delete id="deleteUserStuData" parameterType="PageInfo" >
+         UPDATE tb_student SET userState = #{userState} WHERE id = #{id}
+  	</delete>
+
+  	
+  	<!-- 根据条件获取学生的数据，将数据显示在编辑的页面上 author:wy -->
+	<select id="selectIdUserStuData" parameterType="java.lang.String" resultType="Student">
+        select
+	         a.id,a.stuId,a.realName,a.phoneNum,a.email,a.userPwd,a.schoolId,a.mechanismId,a.major,a.grade,a.classes,
+	        b.mechanismName as schoolName,c.mechanismName as mechanismName,d.mechanismName as majorName,
+	        e.mechanismName as gradeName,f.mechanismName as classesName,a.birthday,
+	        a.address,a.runningExperiment,a.userState,a.picFileId 
+		from 
+		    tb_student as a
+		LEFT OUTER JOIN
+	        tb_mechanism as b on (b.mechanismId=a.schoolId)
+		LEFT OUTER JOIN
+	        tb_mechanism as c on (c.mechanismId=a.mechanismId)
+		LEFT OUTER JOIN
+	        tb_mechanism as d on (d.mechanismId=a.major)
+		LEFT OUTER JOIN
+	        tb_mechanism as e on (e.mechanismId=a.grade)
+		LEFT OUTER JOIN
+	        tb_mechanism as f on (f.mechanismId=a.classes)
+	   <where>
+			1 = 1
+			<if test="id!= null">
+				AND a.id =#{id}
+			</if>
+	   </where>
+	</select>
+	
+	<!-- 修改学生的数据 author:wy -->
+	<update id="editUserStu" parameterType="Student">
+		UPDATE tb_student
+		<set>
+			<if test="stuId != null">
+				stuId = #{stuId},
+			</if>
+			<if test="realName != null">
+				realName = #{realName},
+			</if>
+			<if test="schoolId != null">
+				schoolId = #{schoolId},
+			</if>
+			<if test="mechanismId != null">
+				mechanismId = #{mechanismId},
+			</if>
+			<if test="major != null">
+				major = #{major},
+			</if>
+			<if test="grade != null">
+				grade = #{grade},
+			</if>
+			<if test="classes != null">
+				classes = #{classes},
+			</if>
+			<if test="phoneNum != null">
+				phoneNum = #{phoneNum},
+			</if>
+			<if test="email != null">
+				email = #{email},
+			</if>			
+			<if test="birthday != null">
+				birthday = #{birthday},
+			</if>
+			<if test="address != null">
+				address = #{address},
+			</if>			
+		</set>
+		<where>
+			id = #{id}
+		</where>
+	</update>
+
+	<update id="updateUserPwd" parameterType="User">
+		UPDATE tb_user
+		SET userPwd=#{userPwd}
+		<where>
+			userId=#{userId}
+		</where>
+	</update>
+	
+	<!-- 查询正在做实验的学生，显示在表格的列表上  author:wy -->
+	<select id="selectUserStuexperiment"  parameterType="PageInfo" resultType="Student" >
+        SELECT
+	        a.id,a.stuId,a.realName,a.phoneNum,a.email,a.userPwd,a.schoolId,a.mechanismId,a.major,a.grade,a.classes,
+	        b.mechanismName as schoolName,c.mechanismName as mechanismName,d.mechanismName as majorName,
+	        e.mechanismName as gradeName,f.mechanismName as classesName,a.birthday,
+	        a.address,a.runningExperiment,g.experimentName as experimentName,a.userState,a.picFileId 
+        FROM
+	        tb_student AS a
+		    LEFT OUTER JOIN tb_mechanism AS b ON (b.mechanismId = a.schoolId)
+		    LEFT OUTER JOIN tb_mechanism AS c ON (c.mechanismId = a.mechanismId)
+			LEFT OUTER JOIN tb_mechanism AS d ON (d.mechanismId = a.major)
+			LEFT OUTER JOIN tb_mechanism AS e ON (e.mechanismId = a.grade)
+			LEFT OUTER JOIN tb_mechanism AS f ON (f.mechanismId = a.classes)
+			LEFT OUTER JOIN tb_experiment AS g ON (g.experimentId=substring_index(a.runningExperiment, '_', 1))
+		<where>
+			a.runningExperiment != ''
+			<if test="condition.containsKey('userState')">
+				and a.userState=#{condition.userState}
+			</if>
+			
+			<if test="condition.containsKey('teacherId')">
+			    and substring_index(a.runningExperiment, '_', 1) in (SELECT h.experimentId FROM tb_experiment AS h
+					LEFT OUTER JOIN tb_course AS i ON (i.courseId=h.courseId)
+				where i.teacherId =#{condition.teacherId})
+			</if>
+		
+		</where>
+    	   LIMIT #{from}, #{size}
+	</select>
+	
+	<!-- 查询正在做实验的学生总数 author:wy -->
+	<select id="countUserManageStuexperiment"  parameterType="PageInfo" resultType="int"> 
+        SELECT
+	       COUNT(*)
+        FROM
+	        tb_student AS a
+		    LEFT OUTER JOIN tb_mechanism AS b ON (b.mechanismId = a.schoolId)
+		    LEFT OUTER JOIN tb_mechanism AS c ON (c.mechanismId = a.mechanismId)
+			LEFT OUTER JOIN tb_mechanism AS d ON (d.mechanismId = a.major)
+			LEFT OUTER JOIN tb_mechanism AS e ON (e.mechanismId = a.grade)
+			LEFT OUTER JOIN tb_mechanism AS f ON (f.mechanismId = a.classes)
+			LEFT OUTER JOIN tb_experiment AS g ON (g.experimentId=substring_index(a.runningExperiment, '_', 1))
+		<where>
+			a.runningExperiment != ''
+			<if test="condition.containsKey('userState')">
+				and a.userState=#{condition.userState}
+			</if>
+			
+			<if test="condition.containsKey('teacherId')">
+			    and substring_index(a.runningExperiment, '_', 1) in (SELECT h.experimentId FROM tb_experiment AS h
+					LEFT OUTER JOIN tb_course AS i ON (i.courseId=h.courseId)
+				where i.teacherId =#{condition.teacherId})
+			</if>
+		</where>
+	</select>
+	
+	<!--查询出所有的院系  -->
+	<select id="seleAllDepartments" parameterType="Map" resultType="User">
+		select a.accountId as accountId ,b.mechanismName as mechanismName from tb_aws_account as a 
+		LEFT OUTER JOIN tb_mechanism as b on(b.mechanismId=a.departmentId)
+		where a.isPayingAccount=#{isPayingAccount}
+		AND a.accountStause=0
+	</select>
+	
+	<!-- 获取用户中的数据是否存在院系和学校的机构管理是否被用了 -->	
+	<select id="countUserAccount" parameterType="Map" resultType="int">
+		SELECT 
+			COUNT(*)
+		FROM
+			(SELECT a.schoolId as schoolId ,a.departmentId as departmentId
+			FROM 
+				tb_user as a
+			WHERE  a.userState=#{userState}
+			UNION ALL
+			SELECT c.org  as schoolId,c.departmentId as departmentId
+			FROM 
+				tb_aws_account as c
+			WHERE  c.accountStause=#{accountStause}
+			) as temp
+		<where>
+			1 = 1
+			<if test="mechanismId != ''">
+				AND	(FIND_IN_SET(#{mechanismId},schoolId) OR FIND_IN_SET(#{mechanismId},departmentId))
+			</if>
+		</where>
+	</select>
+	
+	<select id="countStudentId" parameterType="Map" resultType="int">
+		SELECT 
+			COUNT(*)	
+		FROM 
+			tb_student as b
+		<where>
+			1 = 1
+			<if test="userState != ''">
+			   AND b.userState=#{userState}
+			</if>
+			<if test="mechanismId != ''">
+			 AND (FIND_IN_SET(#{mechanismId},schoolId) OR 
+			     FIND_IN_SET(#{mechanismId},mechanismId) OR 
+			     FIND_IN_SET(#{mechanismId},major) OR 
+			     FIND_IN_SET(#{mechanismId},grade) OR 
+			     FIND_IN_SET(#{mechanismId},classes))
+			</if>		
+	    </where> 
+	</select>
+	
+</mapper>

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform_admin.dao.systemManage.MenuDao">
+
+	<select id="listMenuByUserName" parameterType="Map" resultType="Menu">
+		SELECT
+			DISTINCT tb_menu.menuId, tb_menu.menuName, tb_menu.menuIcon, tb_menu.menuUrl, tb_menu.menuPID, tb_menu.menuLevel,tb_menu.menuSort
+		FROM
+			tb_user, tb_role_user, tb_role_menu, tb_menu
+		WHERE
+			tb_user.userId = tb_role_user.userId 
+			AND tb_role_user.roleId = tb_role_menu.roleId
+			AND tb_role_menu.menuId = tb_menu.menuId
+			<if test="userId != null and userId != '' ">
+				AND tb_user.userId = #{userId}
+			</if>
+			
+			<if test="state != null">
+				AND tb_menu.state = #{state}
+			</if>
+		ORDER BY tb_menu.menuSort
+	</select>
+
+
+	<insert id="insert" parameterType="Menu">
+		INSERT INTO tb_menu (
+			menuId, menuPID, menuName, menuIcon, menuUrl, menuDESC, menuSort,
+			menuLevel, operator, createTime, updateTime, permissionIdentifier, state)
+		VALUES (
+			#{menuId}, #{menuPID}, #{menuName}, #{menuIcon}, #{menuUrl}, #{menuDESC}, #{menuSort},
+		    #{menuLevel}, #{operator}, #{createTime}, #{updateTime}, #{permissionIdentifier}, #{state})
+	</insert>
+
+	<!-- 查询菜单author:wx -->
+	<select id="listByCondition" resultType="Menu">
+		SELECT
+		menuId AS menuId,
+		menuPID AS menuPID,
+		menuName AS menuName,
+		menuIcon AS menuIcon,
+		menuUrl AS menuUrl,
+		menuDESC AS menuDESC,
+		menuSort AS menuSort,
+		menuLevel AS menuLevel,
+		operator AS operator,
+		updateTime AS updateTime
+		FROM
+		tb_menu
+		<where>
+			1 = 1
+			<if test="menuLevel != null">
+				AND menuLevel = #{menuLevel}
+			</if>
+			<if test="state != null">
+				AND state = #{state}
+			</if>
+		</where>
+	</select>
+
+
+	<sql id="menuInfoCondition">
+		<if test="condition.containsKey('menuName') and condition.menuName != ''">
+			AND tb_menu.menuName like concat('%',#{condition.menuName},'%')
+		</if>
+		<if test="condition.containsKey('menuLevel') and condition.menuLevel != -1">
+			AND tb_menu.menuLevel = #{condition.menuLevel}
+		</if>
+		<if test="condition.containsKey('state')">
+			AND tb_menu.state = #{condition.state}
+		</if>
+	</sql>
+	<!-- 查询菜单author:wx -->
+	<select id="listMenuInfo" parameterType="PageInfo" resultType="Menu">
+		SELECT
+		menuId AS menuId,
+		menuPID AS menuPID,
+		menuName AS menuName,
+		menuIcon AS menuIcon,
+		menuUrl AS menuUrl,
+		menuDESC AS menuDESC,
+		menuSort AS menuSort,
+		menuLevel AS menuLevel,
+		operator AS operator,
+		updateTime AS updateTime,
+		state as state,
+		permissionIdentifier as permissionIdentifier
+		FROM
+		tb_menu
+		<where>
+			1 =1
+			<include refid="menuInfoCondition"/>
+		</where>
+		ORDER BY menuSort
+		LIMIT #{from}, #{size}
+	</select>
+
+	<!-- 查询菜单总数author:wx -->
+	<select id="getMenuInfoTotal" parameterType="PageInfo" resultType="int">
+		SELECT
+		COUNT(*)
+		FROM
+		tb_menu
+		<where>
+			1 =1
+			<include refid="menuInfoCondition"/>
+		</where>
+	</select>
+
+	<!-- 查询菜单数量author:wx -->
+	<select id="getMenuNum" parameterType="Map" resultType="int">
+		SELECT
+		COUNT(*)
+		FROM
+		tb_menu
+		<where>
+			1 = 1
+			<if test="menuName != null">
+				AND menuName = #{menuName}
+			</if>
+
+			<if test="state != null">
+				AND state = #{state}
+			</if>
+		</where>
+	</select>
+
+	<update id="updateByPrimaryKeySelective" parameterType="Menu">
+		UPDATE tb_menu
+		<set>
+			<if test="menuName != null">
+				menuName = #{menuName},
+			</if>
+			<if test="menuPID != null">
+				menuPID = #{menuPID},
+			</if>
+			<if test="menuIcon != null">
+				menuIcon = #{menuIcon},
+			</if>
+			<if test="menuUrl != null">
+				menuUrl = #{menuUrl},
+			</if>
+			<if test="menuDESC != null">
+				menuDESC = #{menuDESC},
+			</if>
+			<if test="menuSort != null">
+				menuSort = #{menuSort},
+			</if>
+			<if test="menuLevel != null">
+				menuLevel = #{menuLevel},
+			</if>
+			<if test="operator != null">
+				operator = #{operator},
+			</if>
+			<if test="updateTime != null">
+				updateTime = #{updateTime},
+			</if>
+			<if test="permissionIdentifier != null">
+				permissionIdentifier = #{permissionIdentifier},
+			</if>
+		</set>
+		<where>
+			menuId = #{menuId}
+		</where>
+	</update>
+
+
+	<!-- 删除菜单author:wx -->
+	<update id="deleteMenu" parameterType="Map">
+		UPDATE
+		tb_menu
+		<set>
+			<if test="state != null">
+				state = #{state},
+			</if>
+			<if test="operator != null">
+				operator = #{operator},
+			</if>
+		</set>
+		<where>
+			menuId = #{menuId}
+		</where>
+	</update>
+
+    <!-- 查询角色菜单权限 -->
+	<select id="listRoleMenu" parameterType="String" resultType="Integer">
+		SELECT
+			menuId
+		FROM
+			tb_role_menu
+		where
+			roleId = #{roleId}
+	</select>
+	
+</mapper>

@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform_admin.dao.template.TmplMakingDao">
+
+	<resultMap id="template" type="Template">
+		<id property="tmplId" column="tmplId" />
+		<result property="tmplName" column="tmplName" />
+		<result property="tmplType" column="tmplType" />
+		<result property="tmplPrice" column="tmplPrice" />
+		<result property="description" column="description" />
+		<result property="collectCount" column="collectCount" />
+		<result property="evaluateAvgrate" column="evaluateAvgrate" />
+		<result property="evaluationNum" column="evaluationNum" />
+		<result property="releaseStatus" column="releaseStatus" />
+		<result property="associatedTmplName" column="associatedTmplName"/>
+		<result property="associatedTmplId" column="associatedTmplId"/>
+		<association select="getTmplFile" property="tmplScript"
+			column="{correlationId=tmplId, distinguishFlag=script, state=state}"
+			javaType="FileInfo">
+			<id property="fileId" column="fileId" />
+			<result property="correlationId" column="correlationId" />
+			<result property="fileUrl" column="fileUrl" />
+			<result property="fileName" column="fileName" />
+			<result property="fileType" column="fileType" />
+			<result property="fileSize" column="fileSize" />
+		</association>
+	</resultMap>
+
+	<!-- 插入模板 -->
+	<insert id="insertTmpl" parameterType="Template">
+		INSERT INTO tb_template(
+			tmplId, tmplName, tmplType, description, tmplPrice, tmplImg, tmplScript,
+			operator, optTime, state, associatedTmplId, tmplFromFlag)
+		VALUES (
+			#{tmplId}, #{tmplName}, #{tmplType}, #{description}, #{tmplPrice},
+			#{tmplImg.distinguishFlag}, #{tmplScript.distinguishFlag},
+			#{operator}, #{optTime}, #{state}, #{associatedTmplId}, #{tmplFromFlag})
+	</insert>
+
+	
+	<!-- 更新模板信息 -->
+	<update id="updateTmpl" parameterType="Template">
+		UPDATE tb_template
+		<trim prefix="set" suffixOverrides=",">
+			<if test="associatedTmplId != null and associatedTmplId !=''">
+				associatedTmplId = #{associatedTmplId},
+			</if>
+			<if test="tmplName != null and tmplName !=''">
+				tmplName = #{tmplName},
+			</if>
+			<if test="description != null and description !=''">
+				description = #{description},
+			</if>
+			<if test="releaseStatus != null">
+				releaseStatus = #{releaseStatus},
+			</if>
+			<if test="releaseRange != null">
+				releaseRange = #{releaseRange},
+			</if>
+			<if test="releaseDept != null">
+				releaseDept = #{releaseDept},
+			</if>
+			<if test="releaseReviewState != null">
+				releaseReviewState = #{releaseReviewState},
+			</if>
+			<if test="releaseReviewTime != null">
+				releaseReviewTime = #{releaseReviewTime},
+			</if>
+			<if test="releaseTime != null">
+				releaseTime = #{releaseTime},
+			</if>
+			<if test="releaser != null and description !=''">
+				releaser = #{releaser},
+			</if>
+			<if test="operator != null and operator !=''">
+				operator = #{operator},
+			</if>
+			<if test="optTime != null">
+				optTime = #{optTime},
+			</if>
+			<if test="state != null">
+				state = #{state},
+			</if>
+		</trim>
+		<where>
+			tmplId = #{tmplId}
+		</where>
+	</update>
+	
+	
+	<!-- 查询模板列表条件 -->
+	<sql id="tmplTbCondition">
+		1=1 AND tmplFromFlag = #{condition.tmplFromFlag}
+		<if test="condition.containsKey('keyword') and condition.keyword != '' and condition.keyword != null">
+			AND tb_template.tmplName like concat('%',#{condition.keyword},'%')
+		</if>
+		<if test="condition.containsKey('operator') and condition.operator != '' and condition.operator != null">
+			AND tb_template.operator = #{condition.operator}
+		</if>
+	</sql>
+	
+	<!-- 获取模板列表数据 -->
+	<select id="listTmplTbData" parameterType="PageInfo" resultType="Template">
+		SELECT
+			tb_template.tmplId AS tmplId,
+			tb_template.tmplName AS tmplName,
+			tb_template.description AS description,
+			tb_template.releaseStatus AS releaseStatus,
+			tb_template.releaseReviewState AS releaseReviewState,
+			tb_template.optTime AS optTime,
+			tb_template.state AS state
+		FROM
+			tb_template
+		<where>
+			<include refid="tmplTbCondition"/>
+		</where>
+		ORDER BY tb_template.optTime DESC
+		LIMIT #{from}, #{size}
+	</select>
+	
+	<!-- 获取模板列表总数 -->
+	<select id="getTmplTbTotal" parameterType="PageInfo"
+		resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+		tb_template
+		<where>
+			<include refid="tmplTbCondition" />
+		</where>
+	</select>
+	
+	<!-- 根据条件查询模板 -->
+	<select id="getTemplateBaseInfo" parameterType="Map" resultType="Template">
+		SELECT
+			tb_template.tmplId AS tmplId,
+			tb_template.tmplName AS tmplName,
+			tb_template.tmplType AS  tmplType,
+			tb_template.tmplPrice AS tmplPrice,
+			tb_template.releaseStatus AS releaseStatus,
+			tb_template.releaseReviewState AS releaseReviewState,
+			tb_template.releaseRange AS releaseRange,
+			tb_template.releaseDept AS releaseDept
+		FROM
+			tb_template
+		<where>
+			1=1
+			<if test="tmplId != '' and tmplId != null">
+				AND tb_template.tmplId = #{tmplId}
+			</if>
+			<if test="state != null">
+				AND tb_template.state = #{state}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 根据条件查询模板制作信息 -->
+	<select id="getTemplateMakeInfo" parameterType="Map" resultMap="template">
+		SELECT
+			tb_template.tmplId AS tmplId,
+			tb_template.tmplName AS tmplName,
+			tb_template.associatedTmplId AS associatedTmplId,
+			tb_template.description AS description,
+			tb_template.releaseStatus AS releaseStatus,
+			tb_template.releaseReviewState AS releaseReviewState,
+			tb_template.tmplScript AS script,
+			tb_template.operator AS operator,
+			tb_template.optTime AS optTime,
+			#{state} AS state
+		FROM
+			tb_template 
+		<where>
+			1=1 
+			<if test="tmplId != '' and tmplId != null">
+				AND tb_template.tmplId = #{tmplId}
+			</if>
+			<if test="state != null">
+				AND tb_template.state = #{state}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 根据条件查询模板详细 -->
+	<select id="getTemplateDetailInfo" parameterType="Map" resultMap="template">
+		SELECT
+			tb_a.tmplId AS tmplId,
+			tb_a.tmplName AS tmplName,
+			tb_a.associatedTmplId AS associatedTmplId,
+			tb_b.tmplName AS associatedTmplName,
+			tb_dic_item.itemName AS tmplTypeName,
+			COUNT(tb_template_collection.collectionId) AS collectCount,
+			COUNT(tb_template_comment.commentId) AS evaluationNum,
+			ROUND(AVG(tb_template_comment.stars), 2) AS evaluateAvgrate,
+			tb_a.description AS description,
+			tb_a.tmplPrice AS tmplPrice,
+			tb_a.releaseStatus AS releaseStatus,
+			tb_a.releaseReviewState AS releaseReviewState,
+			tb_a.tmplScript AS script,
+			tb_a.operator AS operator,
+			tb_a.optTime AS optTime,
+			#{state} AS state
+		FROM
+			tb_template tb_a
+		LEFT OUTER JOIN
+			tb_template_collection
+		ON (tb_a.tmplId = tb_template_collection.tmplId)
+		LEFT OUTER JOIN
+			tb_template_comment
+		ON (tb_a.tmplId = tb_template_comment.tmplId)
+		LEFT OUTER JOIN
+			tb_dic_item
+		ON (tb_a.tmplType = tb_dic_item.itemId),
+		tb_template tb_b
+		<where>
+			1=1 AND tb_a.associatedTmplId = tb_b.tmplId
+			<if test="tmplId != '' and tmplId != null">
+				AND tb_a.tmplId = #{tmplId}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 获取模板总数 -->
+	<select id="getTemplateTotal" parameterType="Map" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tb_template
+		<where>
+			1=1
+			<if test="tmplName != '' and tmplName != null">
+				AND tb_template.tmplName = #{tmplName}
+			</if>
+			<if test="state != null">
+				AND tb_template.state = #{state}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 获取模板文件 -->
+	<select id="getTmplFile" parameterType="Map" resultType="FileInfo">
+		SELECT
+		tb_file_info.fileId AS fileId,
+		tb_file_info.correlationId AS correlationId,
+		tb_file_info.fileUrl AS fileUrl,
+		tb_file_info.fileName AS fileName,
+		tb_file_info.fileSize AS fileSize
+		FROM
+		tb_file_info
+		<where>
+			tb_file_info.distinguishFlag = #{distinguishFlag} AND
+			tb_file_info.state = #{state}
+			<if test="correlationId != null and correlationId!=''">
+				AND tb_file_info.correlationId = #{correlationId}
+			</if>
+		</where>
+	</select>
+</mapper>

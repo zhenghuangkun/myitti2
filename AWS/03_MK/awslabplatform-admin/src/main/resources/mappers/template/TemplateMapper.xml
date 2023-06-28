@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awslabplatform_admin.dao.template.TemplateDao">
+
+	<resultMap id="template" type="Template">
+		<id property="tmplId" column="tmplId" />
+		<result property="tmplName" column="tmplName" />
+		<result property="tmplType" column="tmplType" />
+		<result property="tmplPrice" column="tmplPrice" />
+		<result property="description" column="description" />
+		<result property="collectCount" column="collectCount" />
+		<result property="evaluateAvgrate" column="evaluateAvgrate" />
+		<result property="evaluationNum" column="evaluationNum" />
+		<result property="releaseStatus" column="releaseStatus" />
+		<result property="tmplFromFlag" column="tmplFromFlag" />
+		<association select="getTmplFile" property="tmplImg"
+			column="{correlationId=tmplId, distinguishFlag=img, state=state}"
+			javaType="FileInfo">
+			<id property="fileId" column="fileId" />
+			<result property="correlationId" column="correlationId" />
+			<result property="fileUrl" column="fileUrl" />
+			<result property="fileName" column="fileName" />
+			<result property="fileType" column="fileType" />
+			<result property="fileSize" column="fileSize" />
+			<result property="imgWidth" column="imgWidth" />
+			<result property="imgHight" column="imgHight" />
+		</association>
+		<association select="getTmplFile" property="tmplScript"
+			column="{correlationId=tmplId, distinguishFlag=script, state=state}"
+			javaType="FileInfo">
+			<id property="fileId" column="fileId" />
+			<result property="correlationId" column="correlationId" />
+			<result property="fileUrl" column="fileUrl" />
+			<result property="fileName" column="fileName" />
+			<result property="fileType" column="fileType" />
+			<result property="fileSize" column="fileSize" />
+		</association>
+	</resultMap>
+	
+	<resultMap id="template_2" type="Template">
+		<id property="tmplId" column="tmplId" />
+		<result property="tmplName" column="tmplName" />
+		<result property="tmplType" column="tmplType" />
+		<result property="tmplPrice" column="tmplPrice" />
+		<result property="description" column="description" />
+		<result property="collectCount" column="collectCount" />
+		<result property="evaluateAvgrate" column="evaluateAvgrate" />
+		<result property="evaluationNum" column="evaluationNum" />
+		<result property="releaseStatus" column="releaseStatus" />
+		<result property="tmplFromFlag" column="tmplFromFlag" />
+		<association select="getTmplFile" property="tmplImg"
+			column="{correlationId=tmplId, distinguishFlag=img, state=state}"
+			javaType="FileInfo">
+			<id property="fileId" column="fileId" />
+			<result property="correlationId" column="correlationId" />
+			<result property="fileUrl" column="fileUrl" />
+			<result property="fileName" column="fileName" />
+			<result property="fileType" column="fileType" />
+			<result property="fileSize" column="fileSize" />
+			<result property="imgWidth" column="imgWidth" />
+			<result property="imgHight" column="imgHight" />
+		</association>
+	</resultMap>
+
+	<resultMap id="TemplateMap" type="Template">
+		<result property="tmplName" column="tmplName" />
+		<result property="tmplType" column="tmplType" />
+		<result property="tmplTypeName" column="tmplTypeName" />
+		<result property="tmplPrice" column="tmplPrice" />
+		<result property="description" column="description" />
+	</resultMap>
+
+
+	<!-- 插入模板 -->
+	<insert id="insert" parameterType="Template">
+		INSERT INTO tb_template(
+		tmplId, tmplName, tmplType, description, tmplPrice, tmplImg, tmplScript,
+		operator, optTime, state,tmplFromFlag)
+		VALUES (
+		#{tmplId}, #{tmplName}, #{tmplType}, #{description}, #{tmplPrice},
+		#{tmplImg.distinguishFlag}, #{tmplScript.distinguishFlag},
+		#{operator}, #{optTime}, #{state},#{tmplFromFlag})
+	</insert>
+
+	<!-- 更新模板信息 -->
+	<update id="updateByPrimaryKeySelective" parameterType="Template">
+		UPDATE tb_template
+		<trim prefix="set" suffixOverrides=",">
+			<if test="tmplName != null and tmplName!=''">
+				tmplName = #{tmplName},
+			</if>
+			<if test="tmplType != null and tmplType!=''">
+				tmplType = #{tmplType},
+			</if>
+			<if test="description != null and description!=''">
+				description = #{description},
+			</if>
+			<if test="tmplPrice != null">
+				tmplPrice = #{tmplPrice},
+			</if>
+			<if test="operator != null and operator != ''">
+				operator = #{operator},
+			</if>
+			<if test="optTime != null and optTime != ''">
+				optTime = #{optTime},
+			</if>
+			<if test="releaseStatus != null">
+				releaseStatus = #{releaseStatus},
+			</if>
+			<if test="releaser != null and releaser != ''">
+				releaser = #{releaser},
+			</if>
+			<if test="releaseTime != null and releaseTime != ''">
+				releaseTime = #{releaseTime},
+			</if>
+		</trim>
+		<where>
+			tmplId = #{tmplId}
+		</where>
+	</update>
+
+	<!-- 根据条件查询模板 -->
+	<select id="selectByCondition" parameterType="Map" resultType="Template">
+		SELECT
+			tb_template.tmplId AS tmplId,
+			tb_template.tmplName AS tmplName,
+			tb_template.tmplPrice AS tmplPrice
+		FROM
+			tb_template
+		<where>
+			1=1
+			<if test="tmplId != '' and tmplId != null">
+				AND tb_template.tmplId = #{tmplId}
+			</if>
+			<if test="state != null">
+				AND tb_template.state = #{state}
+			</if>
+		</where>
+	</select>
+
+	<!-- 根据条件查询模板 -->
+	<select id="getTemplateInfo" parameterType="Map" resultMap="template">
+		SELECT
+			tb_template.tmplId AS tmplId,
+			tb_template.tmplName AS tmplName,
+			tb_template.tmplType AS tmplType,
+			tb_dic_item.itemName AS tmplTypeName,
+			tb_template.tmplPrice AS tmplPrice,
+			tb_user.realName AS releaser,
+			tb_template.description AS description,
+			COUNT(tb_template_collection.collectionId) AS collectCount,
+			COUNT(tb_template_comment.commentId) AS evaluationNum,
+			ROUND(AVG(tb_template_comment.stars), 2) AS evaluateAvgrate,
+			tb_template.releaseStatus AS releaseStatus,
+			tb_template.tmplFromFlag AS tmplFromFlag,
+			tb_template.tmplScript AS script,
+			tb_template.tmplImg AS img,
+			#{state} AS state
+		FROM
+			tb_template
+		LEFT OUTER JOIN
+			tb_user
+		ON (tb_user.userId = tb_template.releaser)	
+		LEFT OUTER JOIN
+			tb_template_collection
+		ON (tb_template.tmplId = tb_template_collection.tmplId)
+		LEFT OUTER JOIN
+			tb_template_comment
+		ON (tb_template.tmplId = tb_template_comment.tmplId)
+		LEFT OUTER JOIN
+			tb_dic_item
+		ON (tb_template.tmplType = tb_dic_item.itemId)
+		<where>
+			1=1
+			<if test="tmplId != '' and tmplId != null">
+				AND tb_template.tmplId = #{tmplId}
+			</if>
+			<if test="state != null">
+				AND tb_template.state = #{state}
+			</if>
+		</where>
+		GROUP BY tb_template.tmplId
+	</select>
+
+	<!-- 查询推荐模板-->
+	<select id="listIndexTmplThumbnail" parameterType="Map" resultMap="template_2">
+		SELECT
+			tb_a.tmplId AS tmplId,
+			tb_a.tmplName AS tmplName,
+			tb_a.tmplType AS tmplType,
+			tb_a.tmplFromFlag AS tmplFromFlag,
+			COUNT(tb_template_collection.collectionId) AS collectCount,
+			AVG(tb_template_comment.stars) AS evaluateAvgrate,
+			SUBSTRING(tb_a.description, 1, #{descriptionLength} ) AS description,
+			tb_a.tmplImg AS img,
+			#{state} AS state
+		FROM
+			tb_template tb_a
+		LEFT OUTER JOIN
+			tb_template_collection
+		ON (tb_a.tmplId = tb_template_collection.tmplId)
+		LEFT OUTER JOIN
+			tb_template_comment
+		ON (tb_a.tmplId = tb_template_comment.tmplId)
+		<where>
+			(SELECT 
+					COUNT(*) 
+				FROM 
+					tb_template tb_b
+				WHERE 
+					tb_b.tmplType = tb_a.tmplType AND tb_b.releaseTime > tb_a.releaseTime) &lt; #{showSize}
+			<if test="keyword != '' and keyword != null">
+				AND tb_a.tmplName like concat('%',#{keyword},'%')
+			</if>
+			<if test="state != null">
+				AND tb_a.state = #{state}
+			</if>
+			<if test="releaseStatus != null">
+				AND tb_a.releaseStatus = #{releaseStatus}
+			</if>
+			<if test="releaseRange != null">
+				AND tb_a.releaseRange = #{releaseRangePlat}
+			</if>
+			<if test="releaseDept != null and releaseRange != null">
+				OR (tb_a.releaseDept = #{releaseDept} AND tb_a.releaseRange = #{releaseRangeDept})
+			</if>
+		</where>
+		GROUP BY tb_a.tmplId
+		ORDER BY ${sort} DESC
+	</select>
+
+
+	<!-- 查询模板缩略图列表条件 -->
+	<sql id="tmplThumbnailCondition">
+		1=1
+		<if test="condition.containsKey('keyword') and condition.keyword != '' and condition.keyword != null">
+			AND tb_template.tmplName like concat('%',#{condition.keyword},'%')
+		</if>
+		<if test="condition.containsKey('userId') and condition.userId != '' and condition.userId != null">
+			AND tb_template_collection.userId = #{condition.userId}
+		</if>
+		<if test="condition.containsKey('state') and condition.state != null">
+			AND tb_template.state = #{condition.state}
+		</if>
+		<if test="condition.containsKey('releaseStatus') and condition.releaseStatus != null">
+			AND tb_template.releaseStatus = #{condition.releaseStatus}
+		</if>
+		<if test="condition.containsKey('releaseRangePlat') and condition.releaseRangePlat != null">
+			AND tb_template.releaseRange = #{condition.releaseRangePlat}
+		</if>
+		<if test="condition.containsKey('releaseDept') and condition.releaseDept != null">
+			OR (tb_template.releaseDept = #{condition.releaseDept} AND tb_template.releaseRange = #{condition.releaseRangeDept})
+		</if>
+	</sql>
+
+	<!-- 获取缩略图列表数据 -->
+	<select id="listTmplThumbnailData" parameterType="PageInfo" resultMap="template">
+		SELECT
+			tb_template.tmplId AS tmplId,
+			tb_template.tmplName AS tmplName,
+			tb_template.tmplType AS tmplType,
+			tb_template.tmplPrice AS tmplPrice,
+			tb_template.tmplFromFlag AS tmplFromFlag,
+			tb_template.releaseStatus AS releaseStatus,
+			COUNT(tb_template_collection.collectionId) AS collectCount,
+			COUNT(tb_template_comment.commentId) AS evaluationNum,
+			AVG(tb_template_comment.stars) AS evaluateAvgrate,
+			SUBSTRING(tb_template.description, 1, #{condition.descriptionLength} ) AS description,
+			tb_template.tmplImg AS img,
+			tb_template.tmplScript AS script,
+			#{condition.state} AS state
+		FROM
+			tb_template
+		LEFT OUTER JOIN
+			tb_template_collection
+		ON (tb_template.tmplId = tb_template_collection.tmplId)
+		LEFT OUTER JOIN
+			tb_template_comment
+		ON (tb_template.tmplId = tb_template_comment.tmplId)
+		<where>
+			<include refid="tmplThumbnailCondition" />
+		</where>
+		GROUP BY tb_template.tmplId
+		<if test="sort != '' and sort != null">
+			ORDER BY ${sort} ${order}
+		</if>
+		LIMIT #{from}, #{size}
+	</select>
+
+	<!-- 获取缩略图列表总数 -->
+	<select id="getTmplThumbnailTotal" parameterType="PageInfo"
+		resultType="int">
+		SELECT
+			COUNT(distinct tb_template.tmplId)
+		FROM
+			tb_template
+		LEFT OUTER JOIN
+			tb_template_collection
+		ON (tb_template.tmplId = tb_template_collection.tmplId)
+		LEFT OUTER JOIN
+			tb_template_comment
+		ON (tb_template.tmplId = tb_template_comment.tmplId)
+		<where>
+			<include refid="tmplThumbnailCondition" />
+		</where>
+	</select>
+
+	<!-- 获取模板文件-->
+	<select id="getTmplFile" parameterType="Map" resultType="FileInfo">
+		SELECT
+			tb_file_info.fileId AS fileId,
+			tb_file_info.correlationId AS correlationId,
+			tb_file_info.fileUrl AS fileUrl,
+			tb_file_info.fileName AS fileName,
+			tb_file_info.fileSize AS fileSize
+		FROM
+			tb_file_info
+		<where>
+			tb_file_info.distinguishFlag = #{distinguishFlag} AND
+			tb_file_info.state = #{state}
+			<if test="correlationId != null and correlationId!=''">
+				AND tb_file_info.correlationId = #{correlationId}
+			</if>
+		</where>
+	</select>
+
+	<!-- 获取模板总数 -->
+	<select id="getTemplateTotal" parameterType="Map" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tb_template
+		<where>
+			1=1
+			<if test="tmplName != '' and tmplName != null">
+				AND tb_template.tmplName = #{tmplName}
+			</if>
+			<if test="state != null">
+				AND tb_template.state = #{state}
+			</if>
+		</where>
+	</select>
+
+	<!-- 删除模板 -->
+	<update id="deleteTemplate" parameterType="Map">
+		UPDATE
+			tb_template
+		<set>
+			<if test="state != null">
+				state = #{state}
+			</if>
+		</set>
+		<where>
+			tmplId = #{tmplId}
+		</where>
+	</update>
+
+	<!--获取所有模板 -->
+	<select id="getTemplateList" resultMap="TemplateMap">
+		SELECT
+			tb_template.tmplId, 
+			tb_template.tmplName, 
+			tb_template.description,
+			tb_template.tmplPrice
+		FROM
+			tb_template
+		<where>
+			1=1
+			<if test="state != null">
+				AND tb_template.state = #{state}
+			</if>
+			<if test="releaseRangePlat != null">
+				AND tb_template.releaseRange = #{releaseRangePlat}
+			</if>
+			<if test="releaseStatus != null">
+				AND tb_template.releaseStatus = #{releaseStatus}
+			</if>
+			<if test="operator != null">
+				AND tb_template.operator = #{operator}
+			</if>
+			<if test="releaseDept != null and releaseRangeDept != null">
+				OR (tb_template.releaseDept = #{releaseDept} AND tb_template.releaseRange = #{releaseRangeDept})
+			</if>
+		</where>
+	</select>
+
+	<!--获取某个模板 -->
+	<select id="getTemplateById" parameterType="java.lang.String" resultMap="TemplateMap">
+		SELECT
+			tb_template.description, 
+			tb_template.tmplPrice, 
+			tb_template.tmplType, 
+			tb_dic_item.itemName AS tmplTypeName
+		FROM
+			tb_template
+		LEFT JOIN
+			tb_dic_item
+		ON
+			tb_dic_item.itemId = tb_template.tmplType
+		<where>
+			tb_template.tmplId=#{tmplId}
+		</where>
+	</select>
+
+	<!-- 插入模板收藏记录 -->
+	<insert id="insertTmplCollection" parameterType="Map">
+		INSERT INTO tb_template_collection(
+		collectionId, userId, tmplId, collectionTime)
+		VALUES (
+		#{collectionId}, #{userId}, #{tmplId}, #{collectionTime})
+	</insert>
+
+	<!-- 删除模板收藏记录 -->
+	<delete id="deleteTmplCollection" parameterType="Map">
+		DELETE FROM
+		tb_template_collection
+		<where>
+			1 = 1
+			<if test="tmplId != '' and tmplId!= null">
+				AND tb_template_collection.tmplId = #{tmplId}
+			</if>
+			<if test="userId != '' and userId != null">
+				AND tb_template_collection.userId = #{userId}
+			</if>
+		</where>
+
+	</delete>
+
+	<!-- 查询模板收藏 -->
+	<select id="getTmplCollection" parameterType="Map" resultType="Map">
+		SELECT
+			collectionId
+		FROM
+		tb_template_collection
+		<where>
+			1 = 1
+			<if test="tmplId != '' and tmplId != null">
+				AND tb_template_collection.tmplId = #{tmplId}
+			</if>
+			<if test="userId != '' and userId != null">
+				AND tb_template_collection.userId = #{userId}
+			</if>
+		</where>
+	</select>
+
+	<!-- 查询创建堆栈需要的信息 -->
+	<select id="getAwsStackInfo" parameterType="Map" resultType="AwsStack">
+		SELECT a.iAMName AS IAMName,a.accessKeyID AS accessKeyID,
+		a.accessKey AS accessKey,u.realName AS realName,u.departmentId AS department,
+		u.schoolId AS school ,
+		f.fileUrl AS tmplUrl
+		FROM tb_user AS u
+		INNER JOIN tb_aws_account AS c ON (c.departmentId=u.departmentId)
+		INNER JOIN tb_aws_accountPool AS p ON (p.payAccountID=c.accountId)
+		INNER JOIN tb_aws_iam AS a ON (a.awsAccount=p.id),
+		tb_template AS t LEFT JOIN
+		tb_file_info AS f ON (t.tmplId = f.correlationId)
+		WHERE p.useType= #{useType} AND a.IAMKind= #{iamKind}
+		AND u.departmentId= #{departmentId}
+		AND c.accountStause =#{accountStause}
+		AND c.isActive =#{accountActive}
+		<if test="tmplId != '' and tmplId != null">
+			AND t.tmplId = #{tmplId}
+		</if>
+		<if test="userId != '' and userId != null">
+			AND u.userId = #{userId}
+		</if>
+		<if test="userState != null">
+			AND u.userState = #{userState}
+		</if>
+		LIMIT 1
+		<!--SELECT-->
+			<!--tb_file_info.fileUrl AS tmplUrl,-->
+			<!--tb_user.realName AS realName,-->
+			<!--tb_aws_iam.IAMName AS IAMName,-->
+			<!--tb_aws_iam.region AS region,-->
+			<!--tb_aws_iam.accessKeyID AS accessKeyID,-->
+			<!--tb_aws_iam.accessKey AS accessKey,-->
+			<!--mechanism_a.mechanismName AS school,-->
+			<!--mechanism_b.mechanismName AS department-->
+		<!--FROM-->
+			<!--tb_template-->
+		<!--LEFT JOIN-->
+			<!--tb_file_info-->
+		<!--ON (tb_template.tmplId = tb_file_info.correlationId),-->
+			<!--tb_user-->
+		<!--LEFT JOIN-->
+			<!--tb_aws_iam-->
+		<!--ON (tb_user.IAM = tb_aws_iam.id)-->
+		<!--LEFT JOIN-->
+			<!--tb_mechanism mechanism_a-->
+		<!--ON (mechanism_a.mechanismId = tb_user.schoolId)-->
+		<!--LEFT JOIN-->
+			<!--tb_mechanism mechanism_b-->
+		<!--ON (mechanism_b.mechanismId = tb_user.departmentId)-->
+		<!--<where>-->
+			<!--1 = 1 AND tb_template.tmplScript = tb_file_info.distinguishFlag-->
+			<!--<if test="tmplId != '' and tmplId != null">-->
+				<!--AND tb_template.tmplId = #{tmplId}-->
+			<!--</if>-->
+			<!--<if test="userId != '' and userId != null">-->
+				<!--AND tb_user.userId = #{userId}-->
+			<!--</if>-->
+			<!--<if test="userState != null">-->
+				<!--AND tb_user.userState = #{userState}-->
+			<!--</if>-->
+		<!--</where>-->
+	</select>
+
+</mapper>
